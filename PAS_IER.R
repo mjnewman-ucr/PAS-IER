@@ -11,7 +11,7 @@ library("readr")
 #> Before reading in the data file I did some basic cleaning (hardcoding, yikes)
 #> of the csv file. I removed some weird columns/rows:
 #> Rows: 2 & 3 (extra column info)
-#> Columns: StartDate	EndDate	Status Progress DistributionChannel	UserLanguage
+#> Columns: StartDate	EndDate	Status Progress Finished DistributionChannel	UserLanguage
 
 #Messing around with the qualtRics package
 
@@ -25,8 +25,14 @@ library("readr")
 
 #READING IN DATA FILE
 
-ds <- read_csv("PAS-IER fabricated data.csv", col_names = TRUE, na = "9999", name_repair = tolower)
+ds <- read_csv("data/pasier_testing.csv", col_names = T, na = "9999", name_repair = tolower)
 
+names(ds)
+(colnames <- list(names(ds)))
+
+ds <- read_csv("data/pasier_testing.csv", col_names = colnames, na = "9999", skip = 3, name_repair = tolower)
+problems()
+spec()
 
 #-------------------------------------------------------------------------------------------------------------
 
@@ -40,10 +46,10 @@ glimpse(ds)
 #> 2. ID numbers look super weird
 
 #Renaming columns
-ds <- ds %>% rename(ID = responseid,
-              date = recordeddate,
-              duration = `duration (in seconds)`,
-              completed = finished)
+ds <- ds %>% rename(date = recordeddate,
+              duration = `duration (in seconds)`)
+
+ds <- ds %>% mutate(ID = 8001:8132)
 
 #Putting ID first
 ds <- select(ds, ID, everything())
