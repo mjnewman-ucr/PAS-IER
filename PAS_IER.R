@@ -13,6 +13,14 @@ library("readr")
 #> Rows: 2 & 3 (extra column info)
 #> Columns: StartDate	EndDate	Status Progress DistributionChannel	UserLanguage
 
+#Messing around with the qualtRics package
+
+#install.packages("qualtRics")
+
+#Alrighty, seems like it's not possible with API access, but I've requested this from
+#Emilyb and it's forthcoming
+
+
 #-------------------------------------------------------------------------------------------------------------
 
 #READING IN DATA FILE
