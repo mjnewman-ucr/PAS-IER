@@ -27,7 +27,7 @@ library("readr")
 
 ds <- read_csv("data/pasier_testing.csv", col_names = T, na = "9999", name_repair = tolower)
 colnames <- as.vector(names(ds))
-ds <- read_csv("data/pasier_testing.csv", col_names = colnames, na = "9999", skip = 14, name_repair = tolower)
+ds <- read_csv("data/pasier_testing.csv", col_names = colnames, na = "9999", skip = 15, name_repair = tolower)
 
 
 #-------------------------------------------------------------------------------------------------------------
@@ -47,8 +47,11 @@ ds <- ds %>% rename(date = recordeddate,
 
 ds <- ds %>% mutate(ID = 8001:8132)
 
-#Putting ID first
-ds <- select(ds, ID, everything())
+#Putting ID first and removing unnecessary columns
+ds <- select(ds, c(ID, ierc_1a:income))
+glimpse(ds)
+
+#write_csv(ds, "cleaned_data_for_john.csv")
 
 #Calculating questionnaire subscales
 
@@ -82,5 +85,81 @@ ds <- ds %>% mutate(ppass_aware = ppass_7 + ppass_13 + ppass_16 + ppass_24)
 ds <- ds %>% mutate(ppass_threat = ppass_3 + ppass_10 + ppass_15 + ppass_20) 
 ds <- ds %>% mutate(ppass_guilt = ppass_6 + ppass_12 + ppass_18 + ppass_21) 
 ds <- ds %>% mutate(ppass_perform = ppass_5 + ppass_11 + ppass_17 + ppass_22) 
+
+#SDT: Basic Psychological Need Satisfaction and Frustration Scale (BPNSNF) (cite)
+#Likert scale of 1 - 7
+
+#> Form three subscale scores, one for the degree to which the person experiences 
+#> satisfaction of each of the three needs. 
+#> 
+#> To do that, you must first reverse score all items that are worded in a negative way 
+#> (i.e., the items shown below with (r) following the items number). To reverse 
+#> score an item, simply subtract the item response from 8. Thus, for example, 
+#> a 2 would be converted to a 6. Once you have reverse scored the items, 
+#> simply average the items on the relevant subscale. They are:
+
+#> Autonomy: 1, 4r, 8, 11r, 14, 17, 20r
+#> Competence: 3r, 5, 10, 13, 15r, 19r
+#> Relatedness: 2, 6, 7r, 9, 12, 16r, 18r, 21
+
+ds <- ds %>% mutate(sdt_4r = 8 - sdt_4,
+                    sdt_11r = 8 - sdt_11,
+                    sdt_20r = 8 - sdt_20,
+                    sdt_3r = 8 - sdt_3,
+                    sdt_15r = 8 - sdt_15,
+                    sdt_19r = 8 - sdt_19,
+                    sdt_7r = 8 - sdt_7,
+                    sdt_16r = 8 - sdt_16,
+                    sdt_18r = 8 - sdt_18
+)
+
+ds$sdt_autonomy <- rowMeans(subset(ds, select = c(sdt_1, sdt_4r, sdt_8, sdt_11r, 
+                                                 sdt_14, sdt_17, sdt_20r)), na.rm = T) 
+
+ds$sdt_competence <- rowMeans(subset(ds, select = c(sdt_3r, sdt_5, sdt_10, sdt_13, 
+                                                    sdt_15r, sdt_19r)), na.rm = T) 
+
+ds$sdt_relatedness <- rowMeans(subset(ds, select = c(sdt_2, sdt_6, sdt_7r, sdt_9, 
+                                                     sdt_12, sdt_16r, sdt_18r, sdt_21)), na.rm = T) 
+
+#BNSR: Basic Need Satisfaction in Relationships (cite)
+
+#1 = not true at all ––– 7 = very true
+
+#> Autonomy: 1, 5, 9r 
+#> Competence: 2, 4r, 7 
+#> Relatedness: 3, 6r, 8
+
+ds <- ds %>% mutate(bnsr_9r = 8 - bnsr_9,
+                    bnsr_4r = 8 - bnsr_4,
+                    bnsr_6r = 8 - bnsr_6
+)
+
+ds$bnsr_autonomy <- rowMeans(subset(ds, select = c(bnsr_1, bnsr_5, bnsr_9r)), na.rm = T)
+ds$bnsr_competence <- rowMeans(subset(ds, select = c(bnsr_2, bnsr_4r, bnsr_7)), na.rm = T)
+ds$bnsr_relatedness <- rowMeans(subset(ds, select = c(bnsr_3, bnsr_6r, bnsr_8)), na.rm = T)
+
+#CERQ: Cognitive Emotion Regulation Questionnaire (cite)
+#> Self-blame: 4, 14
+#> Acceptance: 1, 5
+#> Rumination: 2, 6
+#> Positive Refocusing: 7, 11
+#> Refocus on Planning: 12, 15 
+#> Positive Reappraisal: 3, 8 
+#> Putting into Perspective: 13, 16 
+#> Catastrophizing: 9, 17 
+#> Other-blame: 10, 18 
+
+ds$cerq_selfblame
+ds$cerq_acceptance
+ds$cerq_rumination
+ds$cerq_refocusing
+ds$cerq_planning
+ds$cerq_reappraisal
+ds$cerq_perspective
+ds$cerq_catastrophizing
+ds$cerq_otherblame
+
+
 
 
