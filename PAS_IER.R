@@ -26,13 +26,9 @@ library("readr")
 #READING IN DATA FILE
 
 ds <- read_csv("data/pasier_testing.csv", col_names = T, na = "9999", name_repair = tolower)
+colnames <- as.vector(names(ds))
+ds <- read_csv("data/pasier_testing.csv", col_names = colnames, na = "9999", skip = 14, name_repair = tolower)
 
-names(ds)
-(colnames <- list(names(ds)))
-
-ds <- read_csv("data/pasier_testing.csv", col_names = colnames, na = "9999", skip = 3, name_repair = tolower)
-problems()
-spec()
 
 #-------------------------------------------------------------------------------------------------------------
 
