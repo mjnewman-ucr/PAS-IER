@@ -62,12 +62,43 @@ glimpse(ds)
 #> iris_cs = cognitive support (2, 5, 9, 12, 15, 19, 27)
 #> iris_pp = physical presence  (16, 21, 24)
 
-ds <- ds %>% mutate(iris_r = iris_1 + iris_4 + iris_6 + iris_8 + iris_11 + iris_13 + iris_14 + iris_17 + iris_22 + iris_25 + iris_28)
-ds <- ds %>% mutate(iris_h = iris_3 + iris_7 + iris_10 + iris_18 + iris_20 + iris_23 + iris_26)
-ds <- ds %>% mutate(iris_cs = iris_2 + iris_5 + iris_9 + iris_12 + iris_15 + iris_19 +iris_27)
-ds <- ds %>% mutate(iris_pp = iris_16 + iris_21 + iris_24)
+ds$iris_r <- rowMeans(subset(ds, select = c(iris_1, iris_4, iris_6, iris_8, iris_11, 
+                                            iris_13, iris_14, iris_17, iris_22, iris_25, 
+                                            iris_28)), na.rm = T)
+
+ds$iris_h <- rowMeans(subset(ds, select = c(iris_3, iris_7, iris_10, iris_18, 
+                                            iris_20, iris_23, iris_26)), na.rm = T)
+
+ds$iris_cs <- rowMeans(subset(ds, select = c(iris_2, iris_5, iris_9, iris_12, 
+                                             iris_15, iris_19, iris_27)), na.rm = T)
+
+ds$iris_pp <- rowMeans(subset(ds, select = c(iris_16, iris_21, iris_24)), na.rm = T)
+
+#ds <- ds %>% mutate(iris_r = iris_1 + iris_4 + iris_6 + iris_8 + iris_11 + iris_13 + iris_14 + iris_17 + iris_22 + iris_25 + iris_28)
+#ds <- ds %>% mutate(iris_h = iris_3 + iris_7 + iris_10 + iris_18 + iris_20 + iris_23 + iris_26)
+#ds <- ds %>% mutate(iris_cs = iris_2 + iris_5 + iris_9 + iris_12 + iris_15 + iris_19 +iris_27)
+#ds <- ds %>% mutate(iris_pp = iris_16 + iris_21 + iris_24)
+
+#Perceived effectiveness of IER (cite)
+
+#Likert scale 1 to 7
+#Note: I mislabeled the items in qualtrics, going straight from ier_eff3 to ier_eff5
+
+#> Help (1) = Overall helpfulness
+#> Self (2) = Feelings about self
+#> Connect (3) = Connectedness with IER provider
+#> Coping (5) = Ability to cope with the situation
+#> Control (6) = Control over emotions
+
+ds <- ds %>% rename(eff_help = ier_eff1,
+                    eff_self = ier_eff2,
+                    eff_connect = ier_eff3,
+                    eff_coping = ier_eff5,
+                    eff_control = ier_eff6)
+
 
 #> P-PASS: Perceived Parental Autonomy Support Scale (cite)
+#> Likert scale of 1 - 7
 
 #> Autonomy-Support Subscales
 #> ppass_limits = Offering choice within certain limits: 1, 4, 8, 14 
@@ -79,12 +110,19 @@ ds <- ds %>% mutate(iris_pp = iris_16 + iris_21 + iris_24)
 #> ppass_guilt = Inducing guilt: 6, 12, 18, 21 
 #> ppass_goals = Encouraging performance goals: 5, 11, 17, 22
 
-ds <- ds %>% mutate(ppass_limits = ppass_1 + ppass_4 + ppass_8 + ppass_14)
-ds <- ds %>% mutate(ppass_reason = ppass_2 + ppass_9 + ppass_19 + ppass_23)
-ds <- ds %>% mutate(ppass_aware = ppass_7 + ppass_13 + ppass_16 + ppass_24) 
-ds <- ds %>% mutate(ppass_threat = ppass_3 + ppass_10 + ppass_15 + ppass_20) 
-ds <- ds %>% mutate(ppass_guilt = ppass_6 + ppass_12 + ppass_18 + ppass_21) 
-ds <- ds %>% mutate(ppass_perform = ppass_5 + ppass_11 + ppass_17 + ppass_22) 
+ds$ppass_limits <- rowMeans(subset(ds, select = c(ppass_1, ppass_4, ppass_8, ppass_14)), na.rm = T)
+ds$ppass_reason <- rowMeans(subset(ds, select = c(ppass_2, ppass_9, ppass_19, ppass_23)), na.rm = T) 
+ds$ppass_aware <- rowMeans(subset(ds, select = c(ppass_7, ppass_13, ppass_16, ppass_24)), na.rm = T) 
+ds$ppass_threat <- rowMeans(subset(ds, select = c(ppass_3, ppass_10, ppass_15, ppass_20)), na.rm = T) 
+ds$ppass_guilt <- rowMeans(subset(ds, select = c(ppass_6, ppass_12, ppass_18, ppass_21)), na.rm = T) 
+ds$ppass_goals <- rowMeans(subset(ds, select = c(ppass_5, ppass_11, ppass_17, ppass_22)), na.rm = T) 
+
+#ds <- ds %>% mutate(ppass_limits = ppass_1 + ppass_4 + ppass_8 + ppass_14)
+#ds <- ds %>% mutate(ppass_reason = ppass_2 + ppass_9 + ppass_19 + ppass_23)
+#ds <- ds %>% mutate(ppass_aware = ppass_7 + ppass_13 + ppass_16 + ppass_24) 
+#ds <- ds %>% mutate(ppass_threat = ppass_3 + ppass_10 + ppass_15 + ppass_20) 
+#ds <- ds %>% mutate(ppass_guilt = ppass_6 + ppass_12 + ppass_18 + ppass_21) 
+#ds <- ds %>% mutate(ppass_perform = ppass_5 + ppass_11 + ppass_17 + ppass_22) 
 
 #SDT: Basic Psychological Need Satisfaction and Frustration Scale (BPNSNF) (cite)
 #Likert scale of 1 - 7
@@ -150,15 +188,56 @@ ds$bnsr_relatedness <- rowMeans(subset(ds, select = c(bnsr_3, bnsr_6r, bnsr_8)),
 #> Catastrophizing: 9, 17 
 #> Other-blame: 10, 18 
 
-ds$cerq_selfblame
-ds$cerq_acceptance
-ds$cerq_rumination
-ds$cerq_refocusing
-ds$cerq_planning
-ds$cerq_reappraisal
-ds$cerq_perspective
-ds$cerq_catastrophizing
-ds$cerq_otherblame
+ds$cerq_selfblame <- rowMeans(subset(ds, select = c(cerq_4, cerq_14)), na.rm = T)
+ds$cerq_acceptance <- rowMeans(subset(ds, select = c(cerq_1, cerq_5)), na.rm = T)
+ds$cerq_rumination <- rowMeans(subset(ds, select = c(cerq_2, cerq_6)), na.rm = T)
+ds$cerq_refocusing <- rowMeans(subset(ds, select = c(cerq_7, cerq_11)), na.rm = T)
+ds$cerq_planning <- rowMeans(subset(ds, select = c(cerq_12, cerq_15)), na.rm = T)
+ds$cerq_reappraisal <- rowMeans(subset(ds, select = c(cerq_3, cerq_8)), na.rm = T)
+ds$cerq_perspective <- rowMeans(subset(ds, select = c(cerq_13, cerq_16)), na.rm = T)
+ds$cerq_catastrophizing <- rowMeans(subset(ds, select = c(cerq_9, cerq_17)), na.rm = T)
+ds$cerq_otherblame <- rowMeans(subset(ds, select = c(cerq_10, cerq_18)), na.rm = T)
+
+#DERS: Difficulties in Emotion Regulation (cite)
+#1-5 
+
+#Nonacceptance of emotional responses (NONACCEPT): 11, 12, 21, 23, 25, 29
+#Difficulty engaging in Goal-directed behavior (GOALS): 13, 18, 20r, 26, 33 
+#Impulse control difficulties (IMPULSE): 3, 14, 19, 24r, 27, 32
+#Lack of emotional awareness (AWARENESS): 2r, 6r, 8r, 10r, 17r, 34r 
+#Limited access to emotion regulation strategies (STRATEGIES): 15, 16, 22r, 28, 30, 31, 35, 36
+#Lack of emotional clarity (CLARITY): 1r, 4, 5, 7r, 9
+#Total score: sum of all subscales
+
+ds <- ds %>% mutate(ders_20r = 6 - ders_20,
+                    ders_24r = 6 - ders_24,
+                    ders_2r = 6 - ders_2,
+                    ders_6r = 6 - ders_6,
+                    ders_8r = 6 - ders_8,
+                    ders_10r = 6 - ders_10,
+                    ders_17r = 6 - ders_17,
+                    ders_34r = 6 - ders_34,
+                    ders_22r = 6 - ders_22,
+                    ders_1r = 6 - ders_1,
+                    ders_7r = 6 - ders_7
+)
+
+ds$ders_nonaccept <- rowMeans(subset(ds, select = c(ders_11, ders_12, ders_21, 
+                                                    ders_23, ders_25, ders_29)), na.rm = T)
+ds$ders_goals <- rowMeans(subset(ds, select = c(ders_13, ders_18, ders_20r, ders_26, 
+                                                ders_33)), na.rm = T)
+ds$ders_impulse <- rowMeans(subset(ds, select = c(ders_3, ders_14, ders_19, ders_24r, 
+                                                  ders_27, ders_32)), na.rm = T)
+ds$ders_awareness <- rowMeans(subset(ds, select = c(ders_2r, ders_6r, ders_8r, 
+                                                    ders_10r, ders_17r, ders_34r)), na.rm = T)
+ds$ders_strategies <- rowMeans(subset(ds, select = c(ders_15, ders_16, ders_22r, 
+                                                     ders_28, ders_30, ders_31, 
+                                                     ders_35, ders_36)), na.rm = T)
+ds$ders_clarity <- rowMeans(subset(ds, select = c(ders_1r, ders_4, ders_5, ders_7r, 
+                                                  ders_9)), na.rm = T)
+
+ds <- ds %>% mutate(ders_total = ders_nonaccept + ders_goals + ders_impulse + ders_awareness
+                    + ders_strategies + ders_clarity) 
 
 
 
