@@ -18,10 +18,6 @@ library("lubridate")
 library("Hmisc")
 library("DataExplorer")
 
-#> Before reading in the data file I did some basic cleaning (hardcoding, yikes)
-#> of the csv file. I removed some weird columns/rows:
-#> Rows: 2 & 3 (extra column info)
-#> Columns: StartDate	EndDate	Status Progress Finished DistributionChannel	UserLanguage
 
 #Messing around with the qualtRics package
 
@@ -35,9 +31,9 @@ library("DataExplorer")
 
 #READING IN DATA FILE
 
-ds <- read_csv("data/pasier_mar11_2022_2.csv", col_names = T, na = "9999", name_repair = tolower)
+ds <- read_csv("data/pasier_mar12_2022.csv", col_names = T, na = "9999", name_repair = tolower)
 colnames <- as.vector(names(ds))
-ds <- read_csv("data/pasier_mar11_2022_2.csv", col_names = colnames, na = "9999", skip = 15, name_repair = tolower)
+ds <- read_csv("data/pasier_mar12_2022.csv", col_names = colnames, na = "9999", skip = 15, name_repair = tolower)
 
 
 #-------------------------------------------------------------------------------------------------------------
@@ -55,15 +51,98 @@ glimpse(ds)
 ds <- ds %>% rename(date = recordeddate,
               duration = `duration (in seconds)`)
 
-ds <- ds %>% mutate(ID = 8001:8194)
+ds <- ds %>% mutate(ID = 8001:8195)
 
 #Putting ID first and removing unnecessary columns
 ds <- select(ds, c(ID, date, ierc_1a:income))
 glimpse(ds)
 
-#write_csv(ds, "cleaned_data_for_john.csv")
+#----------------------------------------------------------------------------------
+
+## DEMOGRAPHICS
+
+#For some off reason, year of birth got recoded weirdly by qualtrics.
+
+#> 1995 = 96
+#> 1996 = 97
+#> 1997 = 98
+#> 1998 = 99
+#> 1999 = 100
+#> 2000 = 101
+#> 2001 = 102
+#> 2002 = 103
+#> 2003 = 104
+#> 2004 = 105
+#> 2005 = 106
+
+#Calculating age
+ds$`age#3_1` <- recode(ds$`age#3_1`, '96' = 1995L, '97' = 1996L, '98' = 1997L, '99' = 1998L, 
+                       '100' = 1999L, '101' = 2000L, '102' = 2001L, '103' = 2002L, '104' = 2003L, 
+                       '105' = 2004L, '106' = 2005L)
+
+ds <- unite(ds, dob, 'age#1_1':'age#3_1', sep = "-", remove = F, na.rm = T)
+
+
+ds$date <- as_date(ds$date, format = '%d/%m/%y')
+
+ds$dob <- as_date(ds$dob, format = '%m-%d-%Y')
+
+ds$age <- as.period(interval(start = ds$dob, end = ds$date), unit = "year")
+ds$age <- str_sub(ds$age, 1, 2) 
+
+ds$age <- as.numeric(ds$age)
+
+#Tidying race... recoding responses of multiple as 9
+ds$race <- ifelse(str_length(ds$race) > 1, 9, ds$race)
+
+#Recoding text demographics
+describe(ds$s_orientation_6_text)
+describe(ds$home_3_text)
+describe(ds$home_who_9_text)
+
+
+#gender_5_text: all NAs
+
+#s_orientation_6_text: "Queer", "Questioning"
+#Note: for item "s_orientation" a response of 6 will now be "other"
+
+#home_3_text:
+  #"Go back to visit every weekend"
+  #"Home and Dorm"
+  #"I live on campus in the dorms, but my real home I live with my mom Live with parent sometimes, live with roommates."
+  #"Sometimes with parents, sometimes on campus"
+  #"Live with parent sometimes, live with roommates."
+  #"when I am at home, yes"
+#Note: for item "home" a response of 3 will now be "lives partially with parent(s)"
+
+#home_who
+  #Mother 1
+  #Father 2
+  #Brother 3
+  #Sister 4
+  #Spouse or significant other 5
+  #Friend or roommate 6
+  #I live alone 7
+  #I am unhoused (e.g., shelters, cars, streets) 8
+  #Other: (free response) 9
+#Note: I don't need this data yet, but may use it later 
+
+#home_who_9_text
+  #College Dorm                
+  #Dorm                       
+  #Friends                     
+  #grandma                     
+  #Grandma                    
+  #Grandma
+  #Grandpa
+  #I just moved back to school 
+  #Relative Friend of Family  
+
+#----------------------------------------------------------------------------------
 
 #Calculating questionnaire subscales
+
+#----------------------------------------------------------------------------------
 
 #> IRIS: Interpersonal Regulation Interaction Scale (Swerdlow & Johnson, 2020)
 
@@ -89,6 +168,8 @@ ds$iris_pp <- rowMeans(subset(ds, select = c(iris_16, iris_21, iris_24)), na.rm 
 #ds <- ds %>% mutate(iris_cs = iris_2 + iris_5 + iris_9 + iris_12 + iris_15 + iris_19 +iris_27)
 #ds <- ds %>% mutate(iris_pp = iris_16 + iris_21 + iris_24)
 
+#----------------------------------------------------------------------------------
+
 #Perceived effectiveness of IER (cite)
 
 #Likert scale 1 to 7
@@ -106,8 +187,10 @@ ds <- ds %>% rename(eff_help = ier_eff1,
                     eff_coping = ier_eff5,
                     eff_control = ier_eff6)
 
+#----------------------------------------------------------------------------------
 
 #> P-PASS: Perceived Parental Autonomy Support Scale (cite)
+#> 
 #> Likert scale of 1 - 7
 
 #> Autonomy-Support Subscales
@@ -137,7 +220,10 @@ ds$ppass_pc <- rowMeans(subset(ds, select = c(ppass_threat, ppass_guilt, ppass_g
 #ds <- ds %>% mutate(ppass_guilt = ppass_6 + ppass_12 + ppass_18 + ppass_21) 
 #ds <- ds %>% mutate(ppass_perform = ppass_5 + ppass_11 + ppass_17 + ppass_22) 
 
+#----------------------------------------------------------------------------------
+
 #SDT: Basic Psychological Need Satisfaction and Frustration Scale (BPNSNF) (cite)
+
 #Likert scale of 1 - 7
 
 #> Form three subscale scores, one for the degree to which the person experiences 
@@ -173,6 +259,8 @@ ds$sdt_competence <- rowMeans(subset(ds, select = c(sdt_3r, sdt_5, sdt_10, sdt_1
 ds$sdt_relatedness <- rowMeans(subset(ds, select = c(sdt_2, sdt_6, sdt_7r, sdt_9, 
                                                      sdt_12, sdt_16r, sdt_18r, sdt_21)), na.rm = T) 
 
+#----------------------------------------------------------------------------------
+
 #BNSR: Basic Need Satisfaction in Relationships (cite)
 
 #1 = not true at all ––– 7 = very true
@@ -190,7 +278,10 @@ ds$bnsr_autonomy <- rowMeans(subset(ds, select = c(bnsr_1, bnsr_5, bnsr_9r)), na
 ds$bnsr_competence <- rowMeans(subset(ds, select = c(bnsr_2, bnsr_4r, bnsr_7)), na.rm = T)
 ds$bnsr_relatedness <- rowMeans(subset(ds, select = c(bnsr_3, bnsr_6r, bnsr_8)), na.rm = T)
 
+#----------------------------------------------------------------------------------
+
 #CERQ: Cognitive Emotion Regulation Questionnaire (cite)
+
 #> Self-blame: 4, 14
 #> Acceptance: 1, 5
 #> Rumination: 2, 6
@@ -211,8 +302,11 @@ ds$cerq_perspective <- rowMeans(subset(ds, select = c(cerq_13, cerq_16)), na.rm 
 ds$cerq_catastrophizing <- rowMeans(subset(ds, select = c(cerq_9, cerq_17)), na.rm = T)
 ds$cerq_otherblame <- rowMeans(subset(ds, select = c(cerq_10, cerq_18)), na.rm = T)
 
+#----------------------------------------------------------------------------------
+
 #DERS: Difficulties in Emotion Regulation (cite)
-#1-5 
+
+#Likert scale of 1-5 
 
 #Nonacceptance of emotional responses (NONACCEPT): 11, 12, 21, 23, 25, 29
 #Difficulty engaging in Goal-directed behavior (GOALS): 13, 18, 20r, 26, 33 
@@ -252,145 +346,16 @@ ds$ders_clarity <- rowMeans(subset(ds, select = c(ders_1r, ders_4, ders_5, ders_
 ds <- ds %>% mutate(ders_total = ders_nonaccept + ders_goals + ders_impulse + ders_awareness
                     + ders_strategies + ders_clarity) 
 
-## DEMOGRAPHICS
-#For some off reason, year of birth got recoded weirdly by qualtrics.
-
-#> 1995 = 96
-#> 1996 = 97
-#> 1997 = 98
-#> 1998 = 99
-#> 1999 = 100
-#> 2000 = 101
-#> 2001 = 102
-#> 2002 = 103
-#> 2003 = 104
-#> 2004 = 105
-#> 2005 = 106
-
-#Calculating age
-ds$`age#3_1` <- recode(ds$`age#3_1`, '96' = 1995L, '97' = 1996L, '98' = 1997L, '99' = 1998L, 
-       '100' = 1999L, '101' = 2000L, '102' = 2001L, '103' = 2002L, '104' = 2003L, 
-       '105' = 2004L, '106' = 2005L)
-
-ds <- unite(ds, dob, 'age#1_1':'age#3_1', sep = "-", remove = F, na.rm = T)
-
-
-ds$date <- as_date(ds$date, format = '%d/%m/%y')
-
-ds$dob <- as_date(ds$dob, format = '%m-%d-%Y')
-
-ds$age <- as.period(interval(start = ds$dob, end = ds$date), unit = "year")
-ds$age <- str_sub(ds$age, 1, 2) 
-
-ds$age <- as.numeric(ds$age)
-
-#Tidying race... recoding responses of multiple ethnicities as 9
-ds$race <- ifelse(str_length(ds$race) > 1, 9, ds$race)
-
-
-#Creating a demographics dataset
-demographics <- select(ds, c(ID, age, gender, s_orientation, relationship, race, home, dependent:income))
-
-
-
-##-----------------------------------------------------------------------------
-##DEMOGRAPHIC DESCRIPTIVES
-
-summary(demographics)
-describe(demographics)
-
-
-ggplot(demographics, aes(x = age)) + 
-  geom_histogram() + 
-  xlab("age")
-
-ggplot(demographics, aes(x = race)) + 
-  geom_histogram() + 
-  xlab("race")
-
-ggplot(demographics, aes(x = income)) + 
-  geom_histogram() + 
-  xlab("income")
-
-rcorr(as.matrix(demographics))
-
 ##-----------------------------------------------------------------------------
 
 ###WRITE A NEW CSV FILE WITH THIS TIDIED DATA ^^^
-df <- select(ds, c(ID, age, gender, s_orientation, relationship, race, home, dependent:income, 
+
+clean_ds <- select(ds, c(ID, age, gender, s_orientation, relationship, race, home, dependent:income, 
                    eff_help:eff_control, iris_r:ppass_pc, sdt_autonomy:sdt_relatedness, 
                    bnsr_autonomy:cerq_otherblame, ders_nonaccept:ders_total))
 
-write_csv(df, "pasier_data_cleaned.csv")
+write_csv(clean_ds, "data/pasier_data_cleaned.csv")
 
 
 ##-----------------------------------------------------------------------------
-
-## Survey Descriptives
-
-#Function I found online that makes correlation matrices prettier
-flatten_corr_matrix <- function(cormat, pmat) {
-  ut <- upper.tri(cormat)
-  data.frame(
-    row = rownames(cormat)[row(cormat)[ut]],
-    column = rownames(cormat)[col(cormat)[ut]],
-    cor  =(cormat)[ut],
-    p = pmat[ut]
-  )
-}
-
-
-df <- select(ds, c(iris_r:ppass_pc, eff_help:eff_control, sdt_autonomy:sdt_relatedness, bnsr_autonomy:cerq_otherblame,
-                   ders_nonaccept:ders_total))
-
-df <- select(ds, c(iris_r:iris_pp, ppass_as, ppass_pc))
-rcorr(as.matrix(df))
-iris_ppass <- rcorr(as.matrix(df))
-flatten_corr_matrix(iris_ppass$r, iris_ppass$P)
-
-df <- select(ds, c(iris_r:iris_pp, bnsr_autonomy:bnsr_relatedness))
-rcorr(as.matrix(df))
-iris_bnsr <- rcorr(as.matrix(df))
-flatten_corr_matrix(iris_bnsr$r, iris_bnsr$P)
-
-df <- select(ds, c(iris_r:iris_pp, ders_nonaccept:ders_total))
-rcorr(as.matrix(df))
-iris_ders <- rcorr(as.matrix(df))
-flatten_corr_matrix(iris_ders$r, iris_ders$P)
-
-df <- select(ds, c(iris_r:iris_pp, sdt_autonomy:sdt_relatedness))
-rcorr(as.matrix(df))
-iris_sdt <- rcorr(as.matrix(df))
-flatten_corr_matrix(iris_sdt$r, iris_sdt$P)
-
-
-##-----------------------------------------------------------------------------
-## Forgot to standardize stuff
-
-df <- select(ds, c(age, gender, s_orientation, relationship, race, home, dependent:income, 
-                   eff_help:eff_control, iris_r:ppass_pc, sdt_autonomy:sdt_relatedness, 
-                   bnsr_autonomy:cerq_otherblame, ders_nonaccept:ders_total))
-
-df_scaled <- as.data.frame(scale(df))
-
-dfcor <- select(df_scaled, c(iris_r:iris_pp, eff_help:eff_control))
-rcorr(as.matrix(dfcor))
-
-dfcor <- select(df_scaled, c(ppass_as:ppass_pc, eff_help:eff_control))
-rcorr(as.matrix(dfcor))
-ppass_eff <- rcorr(as.matrix(dfcor))
-flatten_corr_matrix(ppass_eff$r, ppass_eff$P)
-
-
-df_scaled$irisrXas <- df_scaled$iris_r * df_scaled$ppass_as
-
-reg_irisppass <- lm(eff_help ~ iris_r + ppass_as + irisrXas, data = df_scaled)
-summary(reg_irisppass)
-
-
-df <- select(df_scaled, c(iris_r:ppass_goals, home))
-rcorr(as.matrix(df))
-iris_ppass <- rcorr(as.matrix(df))
-flatten_corr_matrix(iris_ppass$r, iris_ppass$P)
-
 
