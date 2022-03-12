@@ -1,3 +1,10 @@
+#> PARKING ON THE DOWNHILL:
+#> 1) Finish cleaning the data... Specifically:
+#>      -recode demographic "other" text responses
+#> 2) Once I have an "official" clean datafile, write a new csv file,
+#>    and start a new script where I start by reading in that clean data file
+
+
 #> Description: This script is for my psyc259 workflow project. Since I don't have
 #> data yet, I fabricated some on qualtrics (preview) 
 
@@ -119,6 +126,9 @@ ds$ppass_aware <- rowMeans(subset(ds, select = c(ppass_7, ppass_13, ppass_16, pp
 ds$ppass_threat <- rowMeans(subset(ds, select = c(ppass_3, ppass_10, ppass_15, ppass_20)), na.rm = T) 
 ds$ppass_guilt <- rowMeans(subset(ds, select = c(ppass_6, ppass_12, ppass_18, ppass_21)), na.rm = T) 
 ds$ppass_goals <- rowMeans(subset(ds, select = c(ppass_5, ppass_11, ppass_17, ppass_22)), na.rm = T) 
+
+ds$ppass_as <- rowMeans(subset(ds, select = c(ppass_limits, ppass_reason, ppass_aware), na.rm = T))
+ds$ppass_pc <- rowMeans(subset(ds, select = c(ppass_threat, ppass_guilt, ppass_goals), na.rm = T))
 
 #ds <- ds %>% mutate(ppass_limits = ppass_1 + ppass_4 + ppass_8 + ppass_14)
 #ds <- ds %>% mutate(ppass_reason = ppass_2 + ppass_9 + ppass_19 + ppass_23)
@@ -305,8 +315,20 @@ ggplot(demographics, aes(x = income)) +
 rcorr(as.matrix(demographics))
 
 ##-----------------------------------------------------------------------------
+
+###WRITE A NEW CSV FILE WITH THIS TIDIED DATA ^^^
+df <- select(ds, c(ID, age, gender, s_orientation, relationship, race, home, dependent:income, 
+                   eff_help:eff_control, iris_r:ppass_pc, sdt_autonomy:sdt_relatedness, 
+                   bnsr_autonomy:cerq_otherblame, ders_nonaccept:ders_total))
+
+write_csv(df, "pasier_data_cleaned.csv")
+
+
+##-----------------------------------------------------------------------------
+
 ## Survey Descriptives
 
+#Function I found online that makes correlation matrices prettier
 flatten_corr_matrix <- function(cormat, pmat) {
   ut <- upper.tri(cormat)
   data.frame(
@@ -317,14 +339,11 @@ flatten_corr_matrix <- function(cormat, pmat) {
   )
 }
 
-df <- select(ds, c(ID, age, gender, s_orientation, relationship, race, home, dependent:income, 
-             iris_r:ppass_goals, sdt_autonomy:sdt_relatedness, bnsr_autonomy:cerq_otherblame,
-             ders_nonaccept:ders_total))
 
-df <- select(ds, c(iris_r:ppass_goals, sdt_autonomy:sdt_relatedness, bnsr_autonomy:cerq_otherblame,
+df <- select(ds, c(iris_r:ppass_pc, eff_help:eff_control, sdt_autonomy:sdt_relatedness, bnsr_autonomy:cerq_otherblame,
                    ders_nonaccept:ders_total))
 
-df <- select(ds, c(iris_r:ppass_goals))
+df <- select(ds, c(iris_r:iris_pp, ppass_as, ppass_pc))
 rcorr(as.matrix(df))
 iris_ppass <- rcorr(as.matrix(df))
 flatten_corr_matrix(iris_ppass$r, iris_ppass$P)
@@ -345,7 +364,33 @@ iris_sdt <- rcorr(as.matrix(df))
 flatten_corr_matrix(iris_sdt$r, iris_sdt$P)
 
 
+##-----------------------------------------------------------------------------
+## Forgot to standardize stuff
+
+df <- select(ds, c(age, gender, s_orientation, relationship, race, home, dependent:income, 
+                   eff_help:eff_control, iris_r:ppass_pc, sdt_autonomy:sdt_relatedness, 
+                   bnsr_autonomy:cerq_otherblame, ders_nonaccept:ders_total))
+
+df_scaled <- as.data.frame(scale(df))
+
+dfcor <- select(df_scaled, c(iris_r:iris_pp, eff_help:eff_control))
+rcorr(as.matrix(dfcor))
+
+dfcor <- select(df_scaled, c(ppass_as:ppass_pc, eff_help:eff_control))
+rcorr(as.matrix(dfcor))
+ppass_eff <- rcorr(as.matrix(dfcor))
+flatten_corr_matrix(ppass_eff$r, ppass_eff$P)
 
 
+df_scaled$irisrXas <- df_scaled$iris_r * df_scaled$ppass_as
+
+reg_irisppass <- lm(eff_help ~ iris_r + ppass_as + irisrXas, data = df_scaled)
+summary(reg_irisppass)
+
+
+df <- select(df_scaled, c(iris_r:ppass_goals, home))
+rcorr(as.matrix(df))
+iris_ppass <- rcorr(as.matrix(df))
+flatten_corr_matrix(iris_ppass$r, iris_ppass$P)
 
 
