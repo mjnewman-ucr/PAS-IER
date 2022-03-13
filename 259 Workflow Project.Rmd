@@ -1,0 +1,270 @@
+---
+title: "259 Workflow Project"
+author: "Madeline Newman"
+date: "3/12/2022"
+output: rmdformats::material
+
+---
+
+```{r setup, include=FALSE}
+library("tidyverse")
+library("dplyr")
+library("readr")
+library("lubridate")
+library("Hmisc")
+library("DataExplorer")
+library("here")
+library("knitr")
+library("rmdformats")
+```
+
+# **Project summary**
+PARKING ON THE DOWNHILL:
+
+I still need to insert a custom function and add plotted data or a data check
+
+## **Parental autonomy support and emerging adults’ interpersonal emotion regulation effectiveness** 
+
+Past research regarding the relation between types of social support and wellness highlights autonomy support as one possible contextualizing factor (e.g., Ryan et al., 2005), such that social support is most effective in conditions of high autonomy support. However, to date, these relations have not been examined in conjunction with IER, which may provide a more nuanced examination of the emotional contribution to parent-child relationship quality and young adult well-being. Studying these associations is timely, as the recent increase of adult children living at home due to the COVID-19 pandemic may introduce plentiful opportunity for parents to facilitate autonomy and emotional support. Consequently, this research aims to investigate parental autonomy support as a possible moderator of the perceived effectiveness of IER, thus contextualizing parent-youth IER strategies that have implications for emerging adults’ socioemotional functioning and well-being.
+
+The following writeup will describe the workflow for my new project, Parental Autonomy Support and Interpersonal Emotion Regulation (PAS-IER). The just finished collecting data via Qualtrics, utilizing SONA participants from the Psychology department at UC Riverside (i.e., undergraduates from Introductory Psychology courses).
+
+# **Preparing the project on Qualtrics**
+
+To begin, I prepared the survey on Qualtrics. I labeled each questionnaire within the Qualtrics project with identifiers, such as “IRIS_1”, “IRIS2”, “IRIS_3”, etcetera, to designate specific items within questionnaires. I also recoded the Likert scale responses (e.g., disagree, agree, somewhat agree, etc.) to numerical values (e.g., 1, 2, 3, etc.). These actions were meant to streamline the data cleaning process and save time, such that when the future data is read into R, the columns will already be named in a clean/intuitive manner, and my Likert scale data will in numerical format.
+
+# **Reading in the data**
+
+In my original workflow I manually edited the CSV file before reading it into R. Specifically,
+several redundant/unnecessary columns and rows were deleted. This was done because
+there were two redundant rows of labels with character data, which led R to mistakenly classify all columns as character data. This could not be prevented by “skipping” the first three rows, as I wanted to use the first row for column names. There did not appear to be an option to only skip rows 2 and 3. However, I have updated
+my workflow to avoid this hardcoding. 
+
+First, I read in the data file and then saved the column names as a vector (named "colnames").
+
+```{r message = FALSE}
+ds <- read_csv("data/pasier_mar12_2022.csv", col_names = T, na = "9999", 
+               name_repair = tolower)
+colnames <- as.vector(names(ds))
+```
+
+I then read in the datafile again and set the `col_names` argument to colnames.
+
+```{r message = FALSE}
+ds <- read_csv("data/pasier_mar12_2022.csv", col_names = colnames, na = "9999", 
+               skip = 15, name_repair = tolower)
+```
+
+#### *Linking Qualtrics with R*
+
+Ideally, I would have linked my data on Qualtrics with R through the R package `qualtRics`. Unfortunately, 
+this package required access to my Qualtrics API key, which I had to request access to through the UCR
+Qualtrics administrator. Although I was eventually granted API access on Saturday, I didn't not have enough time
+to incorporate it into my project.
+
+# **Tidying the data**
+
+I began by renaming two variables and adding in new participant IDs. Although Qualtrics
+provided me with IDs, the IDs were very long and I didn't like them. :) 
+
+```{r message = FALSE}
+ds <- ds %>% rename(date = recordeddate, duration = `duration (in seconds)`)
+ds <- ds %>% mutate(ID = 8001:8195)
+```
+
+As described previously, my original workflow involved editing the CSV file before reading
+in to R. In addition to deleting several rows, I had also removed several metadata columns.
+I have now altered this processes by using `select` to remove the unwanted columns.
+
+```{r message = FALSE}
+ds <- select(ds, c(ID, date, ierc_1a:income))
+```
+
+Given the newness of this project, previous workflow did not have all the necessary code.
+The following sections include both new and revised code.
+
+### **Caculating participant age *(new)* **
+
+I made a mistake when prepping Qualtrics and accidentally recoded year of birth 
+from *1 to 222*. 
+
+```{r message = FALSE}
+ds$`age#3_1` <- recode(ds$`age#3_1`, '96' = 1995L, '97' = 1996L, '98' = 1997L, '99' = 1998L, 
+                       '100' = 1999L, '101' = 2000L, '102' = 2001L, '103' = 2002L, '104' = 2003L, 
+                       '105' = 2004L, '106' = 2005L)
+```
+
+The raw date of birth data was separated into three columns, so I used `unite` to combine 
+the day, month, and year. 
+
+```{r message = FALSE}
+ds <- unite(ds, dob, 'age#1_1':'age#3_1', sep = "-", remove = F, na.rm = T)
+```
+
+I then used `as_date` to convert the data to date format. I did the same for 
+the "date" column (i.e., date of testing).
+
+```{r message = FALSE}
+ds$dob <- as_date(ds$dob, format = '%m-%d-%Y')
+ds$date <- as_date(ds$date, format = '%d/%m/%y')
+```
+
+Next, I used the `as.period` and `interval` functions to calculate participant age.
+`str_sub` removed the month, day, and unneccessary time stamp. Finally, I converted 
+age back to a numeric.
+
+```{r message = FALSE}
+ds$age <- as.period(interval(start = ds$dob, end = ds$date), unit = "year")
+ds$age <- str_sub(ds$age, 1, 2) 
+ds$age <- as.numeric(ds$age)
+```
+
+### **Recoding participant race *(new)* **
+
+Several participants reported being multiple races. I used `str_lenth` to recode
+any value that was longer than 1. 
+
+```{r message = FALSE}
+ds$race <- ifelse(str_length(ds$race) > 1, 9, ds$race)
+```
+
+### **Renaming qualitative data**
+
+As of now, all of my data is in numeric format. I aim to recode my qualitative data
+to character format at a future time. For example, for gender I will recode "1" as
+"male", "2" as female, and "3" as "gender-nonconforming". However, I've help off doing
+this because I may be able to do it through Qualtrics before downloading data, or through 
+the `qualtRics` package. 
+
+# **Scaling the measures**
+
+Unfortunately there wasn't an efficient way to automate scaling my measures. Because there is
+no pattern to all of the different subscales I was unable to write a function that
+would save me much time. 
+
+### **Example of scaling**
+
+The majority of my measures required calculating the average of select items. Below
+is an example of my measure of psychology needs and its three subscales.
+
+```{r message = FALSE}
+ds <- ds %>% mutate(sdt_4r = 8 - sdt_4,
+                    sdt_11r = 8 - sdt_11,
+                    sdt_20r = 8 - sdt_20,
+                    sdt_3r = 8 - sdt_3,
+                    sdt_15r = 8 - sdt_15,
+                    sdt_19r = 8 - sdt_19,
+                    sdt_7r = 8 - sdt_7,
+                    sdt_16r = 8 - sdt_16,
+                    sdt_18r = 8 - sdt_18)
+
+ds$sdt_autonomy <- rowMeans(subset(ds, select = c(sdt_1, sdt_4r, sdt_8, sdt_11r, 
+                                                 sdt_14, sdt_17, sdt_20r)), na.rm = T) 
+
+ds$sdt_competence <- rowMeans(subset(ds, select = c(sdt_3r, sdt_5, sdt_10, sdt_13, 
+                                                    sdt_15r, sdt_19r)), na.rm = T) 
+
+ds$sdt_relatedness <- rowMeans(subset(ds, select = c(sdt_2, sdt_6, sdt_7r, 
+                                                     sdt_9, sdt_12, sdt_16r, 
+                                                     sdt_18r, sdt_21)), na.rm = T) 
+```
+
+I repeated this process for the remaining measures. 
+
+```{r include = FALSE}
+ds <- ds %>% rename(eff_help = ier_eff1,
+                    eff_self = ier_eff2,
+                    eff_connect = ier_eff3,
+                    eff_coping = ier_eff5,
+                    eff_control = ier_eff6)
+
+ds$iris_r <- rowMeans(subset(ds, select = c(iris_1, iris_4, iris_6, iris_8, iris_11, 
+                                            iris_13, iris_14, iris_17, iris_22, iris_25, 
+                                            iris_28)), na.rm = T)
+
+ds$iris_h <- rowMeans(subset(ds, select = c(iris_3, iris_7, iris_10, iris_18, 
+                                            iris_20, iris_23, iris_26)), na.rm = T)
+
+ds$iris_cs <- rowMeans(subset(ds, select = c(iris_2, iris_5, iris_9, iris_12, 
+                                             iris_15, iris_19, iris_27)), na.rm = T)
+
+ds$iris_pp <- rowMeans(subset(ds, select = c(iris_16, iris_21, iris_24)), na.rm = T)
+
+ds$ppass_limits <- rowMeans(subset(ds, select = c(ppass_1, ppass_4, ppass_8, ppass_14)), na.rm = T)
+ds$ppass_reason <- rowMeans(subset(ds, select = c(ppass_2, ppass_9, ppass_19, ppass_23)), na.rm = T) 
+ds$ppass_aware <- rowMeans(subset(ds, select = c(ppass_7, ppass_13, ppass_16, ppass_24)), na.rm = T) 
+ds$ppass_threat <- rowMeans(subset(ds, select = c(ppass_3, ppass_10, ppass_15, ppass_20)), na.rm = T) 
+ds$ppass_guilt <- rowMeans(subset(ds, select = c(ppass_6, ppass_12, ppass_18, ppass_21)), na.rm = T) 
+ds$ppass_goals <- rowMeans(subset(ds, select = c(ppass_5, ppass_11, ppass_17, ppass_22)), na.rm = T) 
+
+ds$ppass_as <- rowMeans(subset(ds, select = c(ppass_limits, ppass_reason, ppass_aware), na.rm = T))
+ds$ppass_pc <- rowMeans(subset(ds, select = c(ppass_threat, ppass_guilt, ppass_goals), na.rm = T))
+
+ds <- ds %>% mutate(bnsr_9r = 8 - bnsr_9,
+                    bnsr_4r = 8 - bnsr_4,
+                    bnsr_6r = 8 - bnsr_6)
+
+ds$bnsr_autonomy <- rowMeans(subset(ds, select = c(bnsr_1, bnsr_5, bnsr_9r)), na.rm = T)
+ds$bnsr_competence <- rowMeans(subset(ds, select = c(bnsr_2, bnsr_4r, bnsr_7)), na.rm = T)
+ds$bnsr_relatedness <- rowMeans(subset(ds, select = c(bnsr_3, bnsr_6r, bnsr_8)), na.rm = T)
+
+ds$cerq_selfblame <- rowMeans(subset(ds, select = c(cerq_4, cerq_14)), na.rm = T)
+ds$cerq_acceptance <- rowMeans(subset(ds, select = c(cerq_1, cerq_5)), na.rm = T)
+ds$cerq_rumination <- rowMeans(subset(ds, select = c(cerq_2, cerq_6)), na.rm = T)
+ds$cerq_refocusing <- rowMeans(subset(ds, select = c(cerq_7, cerq_11)), na.rm = T)
+ds$cerq_planning <- rowMeans(subset(ds, select = c(cerq_12, cerq_15)), na.rm = T)
+ds$cerq_reappraisal <- rowMeans(subset(ds, select = c(cerq_3, cerq_8)), na.rm = T)
+ds$cerq_perspective <- rowMeans(subset(ds, select = c(cerq_13, cerq_16)), na.rm = T)
+ds$cerq_catastrophizing <- rowMeans(subset(ds, select = c(cerq_9, cerq_17)), na.rm = T)
+ds$cerq_otherblame <- rowMeans(subset(ds, select = c(cerq_10, cerq_18)), na.rm = T)
+
+ds <- ds %>% mutate(ders_20r = 6 - ders_20,
+                    ders_24r = 6 - ders_24,
+                    ders_2r = 6 - ders_2,
+                    ders_6r = 6 - ders_6,
+                    ders_8r = 6 - ders_8,
+                    ders_10r = 6 - ders_10,
+                    ders_17r = 6 - ders_17,
+                    ders_34r = 6 - ders_34,
+                    ders_22r = 6 - ders_22,
+                    ders_1r = 6 - ders_1,
+                    ders_7r = 6 - ders_7)
+
+ds$ders_nonaccept <- rowMeans(subset(ds, select = c(ders_11, ders_12, ders_21, 
+                                                    ders_23, ders_25, ders_29)), na.rm = T)
+ds$ders_goals <- rowMeans(subset(ds, select = c(ders_13, ders_18, ders_20r, ders_26, 
+                                                ders_33)), na.rm = T)
+ds$ders_impulse <- rowMeans(subset(ds, select = c(ders_3, ders_14, ders_19, ders_24r, 
+                                                  ders_27, ders_32)), na.rm = T)
+ds$ders_awareness <- rowMeans(subset(ds, select = c(ders_2r, ders_6r, ders_8r, 
+                                                    ders_10r, ders_17r, ders_34r)), na.rm = T)
+ds$ders_strategies <- rowMeans(subset(ds, select = c(ders_15, ders_16, ders_22r, 
+                                                     ders_28, ders_30, ders_31, 
+                                                     ders_35, ders_36)), na.rm = T)
+ds$ders_clarity <- rowMeans(subset(ds, select = c(ders_1r, ders_4, ders_5, ders_7r, 
+                                                  ders_9)), na.rm = T)
+
+ds <- ds %>% mutate(ders_total = ders_nonaccept + ders_goals + ders_impulse + ders_awareness
+                    + ders_strategies + ders_clarity) 
+```
+
+# **Writing a clean data file**
+
+Once my data was tidied, I wrote a new csv data file named "pasier_data_cleaned.csv"
+and saved it into my PAS-IER data folder. This new data file included several demographic variables
+and all of the scaled measures.
+
+```{r message = FALSE}
+clean_ds <- select(ds, c(ID, age, gender, s_orientation, relationship, race, home, dependent:income, 
+                   eff_help:eff_control, iris_r:ppass_pc, sdt_autonomy:sdt_relatedness, 
+                   bnsr_autonomy:cerq_otherblame, ders_nonaccept:ders_total))
+
+write_csv(clean_ds, "data/pasier_data_cleaned.csv")
+```
+
+Now when I do my data analysis (which needs to happen ASAP in time for SAS!!) 
+I will have a clean data file to read in. 
+
+```{r message = FALSE}
+ds <- read_csv("data/pasier_data_cleaned.csv", col_names = T, na = "NA")
+```
