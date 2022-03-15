@@ -8,8 +8,13 @@ library("Hmisc")
 library("DataExplorer")
 library("ggpubr")
 library("moments")
+library("scales")
+library("sjmisc")
+library("pequod")
 
-install.packages("moments")
+#install.packages("moments")
+#install.packages("sjmisc")
+install.packages("pequod")
 
 ds <- read_csv("data/pasier_data_cleaned.csv", col_names = T, na = "NA")
 summary(ds)
@@ -31,107 +36,35 @@ ggqqplot(ds$sdt_autonomy)
 ggqqplot(ds$sdt_competence)
 ggqqplot(ds$sdt_relatedness)
 
-shapiro.test(ds$ppass_as)
-ggplot(ds, aes(x = ppass_as)) + 
-  geom_histogram(bins = 100) + 
-  xlab("autonomy support")
-skewness(ds$ppass_as, na.rm = TRUE)
+shapiro.test(ds$eff_connect)
+ggplot(ds, aes(x = eff_connect)) + 
+  geom_histogram(bins = 30)
+skewness(ds$eff_connect, na.rm = TRUE)
 
-shapiro.test(ds$ppass_pc)
-ggplot(ds, aes(x = ppass_pc)) + 
-  geom_histogram(bins = 100) + 
-  xlab("parental control")
-skewness(ds$ppass_pc, na.rm = TRUE)
+shapiro.test(ds$eff_self)
+ggplot(ds, aes(x = eff_self)) + 
+  geom_histogram(bins = 30)
+skewness(ds$eff_self, na.rm = TRUE)
 
+shapiro.test(ds$eff_help)
+ggplot(ds, aes(x = eff_help)) + 
+  geom_histogram(bins = 30)
+skewness(ds$eff_help, na.rm = TRUE)
 
-shapiro.test(ds$iris_r)
-ggplot(ds, aes(x = iris_r)) + 
-  geom_histogram(bins = 100) + 
-  xlab("responsiveness")
-skewness(ds$iris_r, na.rm = TRUE)
+shapiro.test(ds$eff_control)
+ggplot(ds, aes(x = eff_control)) + 
+  geom_histogram(bins = 30)
+skewness(ds$eff_control, na.rm = TRUE)
+
+shapiro.test(ds$eff_coping)
+ggplot(ds, aes(x = eff_coping)) + 
+  geom_histogram(bins = 30)
+skewness(ds$eff_coping, na.rm = TRUE)
 
 shapiro.test(ds$iris_cs)
 ggplot(ds, aes(x = iris_cs)) + 
   geom_histogram(bins = 100) + 
-  xlab("cog support")
 skewness(ds$iris_cs, na.rm = TRUE)
-
-shapiro.test(ds$iris_h)
-ggplot(ds, aes(x = iris_h)) + 
-  geom_histogram(bins = 100) + 
-  xlab("hostility")
-skewness(ds$iris_h, na.rm = TRUE)
-
-shapiro.test(ds$ppass_goals)
-ggplot(ds, aes(x = ppass_goals)) + 
-  geom_histogram(bins = 100) + 
-  xlab("ppass goals")
-skewness(ds$ppass_goals, na.rm = TRUE)
-
-shapiro.test(ds$ppass_threat)
-ggplot(ds, aes(x = ppass_threat)) + 
-  geom_histogram(bins = 100) + 
-  xlab("ppass threat")
-skewness(ds$ppass_threat, na.rm = TRUE)
-
-shapiro.test(ds$ppass_guilt)
-
-#Creating a demographics dataset
-demographics <- select(ds, c(age, gender, s_orientation, relationship, race, home, dependent:income))
-
-
-
-##-----------------------------------------------------------------------------
-##DEMOGRAPHIC DESCRIPTIVES
-
-summary(demographics)
-describe(demographics)
-
-
-ggplot(demographics, aes(x = age)) + 
-  geom_histogram() + 
-  xlab("age")
-
-ggplot(demographics, aes(x = race)) + 
-  geom_histogram() + 
-  xlab("race")
-
-ggplot(demographics, aes(x = income)) + 
-  geom_histogram() + 
-  xlab("income")
-
-rcorr(as.matrix(demographics))
-
-##-----------------------------------------------------------------------------
-
-ggplot(ds, aes(x=iris_r, y=ppass_as)) + geom_point()
-ggplot(ds, aes(x=iris_cs, y=ppass_as)) + geom_point()
-ggplot(ds, aes(x=iris_h, y=ppass_as)) + geom_point()
-ggplot(ds, aes(x=iris_pp, y=ppass_as)) + geom_point()
-ggplot(ds, aes(x=iris_r, y=ppass_pc)) + geom_point()
-ggplot(ds, aes(x=iris_cs, y=ppass_pc)) + geom_point()
-ggplot(ds, aes(x=iris_h, y=ppass_pc)) + geom_point()
-ggplot(ds, aes(x=iris_pp, y=ppass_pc)) + geom_point()
-ggplot(ds, aes(x=iris_r, y=eff_help)) + geom_point()
-ggplot(ds, aes(x=iris_cs, y=eff_help)) + geom_point()
-ggplot(ds, aes(x=iris_h, y=eff_help)) + geom_point()
-ggplot(ds, aes(x=iris_pp, y=eff_help)) + geom_point()
-ggplot(ds, aes(x=iris_h, y=eff_self)) + geom_point()
-
-#---------
-
-#Standardized
-
-df <- select(ds, c(age, gender, s_orientation, relationship, race, home, dependent:income, 
-                   eff_help:eff_control, iris_r:ppass_pc, sdt_autonomy:sdt_relatedness, 
-                   bnsr_autonomy:cerq_otherblame, ders_nonaccept:ders_total))
-
-df_scaled <- as.data.frame(scale(df))
-
-ggplot(df_scaled, aes(x=iris_r, y=eff_help)) + geom_point()
-ggplot(df_scaled, aes(x=iris_r, y=ppass_as)) + geom_point() + 
-  geom_point()+
-  geom_smooth(method=lm)
 
 
 ## Survey Descriptives
@@ -172,31 +105,164 @@ iris_sdt <- rcorr(as.matrix(df))
 flatten_corr_matrix(iris_sdt$r, iris_sdt$P)
 
 
-##-----------------------------------------------------------------------------
-## Forgot to standardize stuff
+##------------------------------------------------------------------------------
 
-df <- select(ds, c(age, gender, s_orientation, relationship, race, home, dependent:income, 
-                   eff_help:eff_control, iris_r:ppass_pc, sdt_autonomy:sdt_relatedness, 
-                   bnsr_autonomy:cerq_otherblame, ders_nonaccept:ders_total))
+#Dichotomising IER because it's just too skewed
 
-df_scaled <- as.data.frame(scale(df))
+ds$iris_r_dicho <- dicho(ds$iris_r, dich.by = "md", as.num = T, val.labels = c("low", "high"))
+ds$iris_cs_dicho <- dicho(ds$iris_cs, dich.by = "md", as.num = T, val.labels = c("low", "high"))
+ds$iris_pp_dicho <- dicho(ds$iris_pp, dich.by = "md", as.num = T, val.labels = c("low", "high"))
+ds$iris_h_dicho <- dicho(ds$iris_h, dich.by = "md", as.num = T, val.labels = c("low", "high"))
 
-dfcor <- select(df_scaled, c(iris_r:iris_pp, eff_help:eff_control))
-rcorr(as.matrix(dfcor))
+ds$pc_dicho <- dicho(ds$ppass_pc, dich.by = "md", as.num = T, val.labels = c("low", "high"))
 
-dfcor <- select(df_scaled, c(ppass_as:ppass_pc, eff_help:eff_control))
-rcorr(as.matrix(dfcor))
-ppass_eff <- rcorr(as.matrix(dfcor))
-flatten_corr_matrix(ppass_eff$r, ppass_eff$P)
-
-
-df_scaled$irisrXas <- df_scaled$iris_r * df_scaled$ppass_as
-
-reg_irisppass <- lm(eff_help ~ iris_r + ppass_as + irisrXas, data = df_scaled)
-summary(reg_irisppass)
+count(ds, iris_r_dicho)
+count(ds, iris_cs_dicho)
+count(ds, iris_pp_dicho)
+count(ds, iris_h_dicho)
 
 
-df <- select(df_scaled, c(iris_r:ppass_goals, home))
-rcorr(as.matrix(df))
-iris_ppass <- rcorr(as.matrix(df))
-flatten_corr_matrix(iris_ppass$r, iris_ppass$P)
+#Centering variables 
+
+center_scale <- function(x) {
+  scale(x, scale = FALSE)
+}
+
+ds$as_centered <- center_scale(ds$ppass_as)
+ds$pc_centered <- center_scale(ds$ppass_pc)
+ds$eff_coping_centered <- center_scale(ds$eff_coping)
+ds$eff_connect_centered <- center_scale(ds$eff_connect)
+ds$eff_self_centered <- center_scale(ds$eff_self)
+ds$eff_control_centered <- center_scale(ds$eff_control)
+ds$eff_help_centered <- center_scale(ds$eff_help)
+ds$iris_cs_centered <- center_scale(ds$iris_cs)
+
+
+####### Multiple regressions with interactions ############
+
+##Parental autonomy support + ier responsiveness
+
+ds$respXas <- ds$as_centered*ds$iris_r_dicho
+
+reg <- lm(eff_coping_centered ~ as_centered + iris_r_dicho + respXas, data = ds)
+summary(reg)
+
+##SIG---------
+reg <- lm(eff_connect_centered ~ as_centered + iris_r_dicho + respXas, data = ds)
+summary(reg)
+##------------
+
+reg <- lm(eff_self_centered ~ as_centered + iris_r_dicho + respXas, data = ds)
+summary(reg)
+
+##SIG??-------
+reg <- lm(eff_control_centered ~ as_centered + iris_r_dicho + respXas, data = ds)
+summary(reg)
+##------------
+
+reg <- lm(eff_help_centered ~ as_centered + iris_r_dicho + respXas, data = ds)
+summary(reg)
+##------------------------------------------------------------------------------
+
+##Parental autonomy support + ier cognitive support
+
+ds$csXas <- ds$as_centered*ds$iris_cs_centered
+
+reg <- lm(eff_help_centered ~ as_centered + iris_cs_centered + csXas, data = ds)
+summary(reg)
+
+##SIG---------
+reg <- lm(eff_control_centered ~ as_centered + iris_cs_centered + csXas, data = ds)
+summary(reg)
+##------------
+
+reg <- lm(eff_self_centered ~ as_centered + iris_cs_centered + csXas, data = ds)
+summary(reg)
+
+##SIG---------
+reg <- lm(eff_coping_centered ~ as_centered + iris_cs_centered + csXas, data = ds)
+summary(reg)
+##------------
+
+reg <- lm(eff_connect_centered ~ as_centered + iris_cs_centered + csXas, data = ds)
+summary(reg)
+##------------------------------------------------------------------------------
+
+#Parental Control + IER responsiveness
+
+ds$respXpc <- ds$pc_centered*ds$iris_r_dicho
+
+reg <- lm(eff_coping_centered ~ pc_centered + iris_r_dicho + respXpc, data = ds)
+summary(reg)
+reg <- lm(eff_self_centered ~ pc_centered + iris_r_dicho + respXpc, data = ds)
+summary(reg)
+reg <- lm(eff_connect_centered ~ pc_centered + iris_r_dicho + respXpc, data = ds)
+summary(reg)
+reg <- lm(eff_control_centered ~ pc_centered + iris_r_dicho + respXpc, data = ds)
+summary(reg)
+
+##SIG---------
+reg <- lm(eff_help_centered ~ pc_centered + iris_r_dicho + respXpc, data = ds)
+summary(reg)
+ds$respXpcd <- ds$pc_dicho*ds$iris_r_dicho
+reg <- lm(eff_help_centered ~ pc_dicho + iris_r_dicho + respXpcd, data = ds)
+summary(reg)
+##------------
+
+##------------------------------------------------------------------------------
+
+#Parental Control + IER cognitive support
+
+ds$csXpc <- ds$pc_centered*ds$iris_cs_centered
+
+reg <- lm(eff_help_centered ~ pc_centered + iris_cs_centered + csXpc, data = ds)
+summary(reg)
+reg <- lm(eff_control_centered ~ pc_centered + iris_cs_centered + csXpc, data = ds)
+summary(reg)
+reg <- lm(eff_connect_centered ~ pc_centered + iris_cs_centered + csXpc, data = ds)
+summary(reg)
+reg <- lm(eff_self_centered ~ pc_centered + iris_cs_centered + csXpc, data = ds)
+summary(reg)
+reg <- lm(eff_coping_centered ~ pc_centered + iris_cs_centered + csXpc, data = ds)
+summary(reg)
+
+#Parental Control (dicho) + IER cognitive support
+
+ds$csXpcd <- ds$pc_dicho*ds$iris_cs_centered
+
+reg <- lm(eff_help_centered ~ pc_dicho+ iris_cs_centered + csXpcd, data = ds)
+summary(reg)
+reg <- lm(eff_control_centered ~ pc_dicho + iris_cs_centered + csXpcd, data = ds)
+summary(reg)
+reg <- lm(eff_connect_centered ~ pc_dicho + iris_cs_centered + csXpcd, data = ds)
+summary(reg)
+reg <- lm(eff_self_centered ~ pc_dicho + iris_cs_centered + csXpcd, data = ds)
+summary(reg)
+reg <- lm(eff_coping_centered ~ pc_dicho + iris_cs_centered + csXpcd, data = ds)
+summary(reg)
+##------------------------------------------------------------------------------
+
+#Plotting simple slops
+
+model<-lmres(eff_help~ppass_pc*iris_r_dicho, centered = c("ppass_pc", "iris_r_dicho"), data = ds)
+(S_slopes<-simpleSlope(model, pred = "ppass_pc", mod1 = "iris_r_dicho"))
+(Plot<-PlotSlope(S_slopes))
+
+model<-lmres(eff_help~ppass_pc*iris_r_dicho, centered = c("ppass_pc", "iris_r_dicho"), data = ds)
+(S_slopes<-simpleSlope(model, pred = "iris_r_dicho", mod1 = "ppass_pc"))
+(Plot<-PlotSlope(S_slopes))
+
+model<-lmres(eff_coping~ppass_as*iris_cs, centered = c("ppass_as", "iris_cs"), data = ds)
+(S_slopes<-simpleSlope(model, pred = "iris_cs", mod1 = "ppass_as"))
+(Plot<-PlotSlope(S_slopes))
+
+
+
+###
+model<-lmres(eff_control~ppass_as*iris_cs, centered = c("ppass_as", "iris_cs"), data = ds)
+(S_slopes<-simpleSlope(model, pred = "iris_cs", mod1 = "ppass_as"))
+(Plot<-PlotSlope(S_slopes))
+
+
+
+

@@ -79,16 +79,17 @@ gender
 2 'Male'
 3 'Non-binary/Third gender'
 4 'Prefer to self decsribe'
-5 'Prefer to to say'.
+5 'Prefer to no say'.
 EXECUTE. 
 
 VALUE LABELS
 s_orientation
 1 'Straight/heterosexual'
-2'Bisexual/pansexual'
+2 'Bisexual/pansexual'
 3 'Gay/lesbian'
 4 'Asexual'
-5 'Prefer to self-describe'.
+5 'Prefer to not say'
+6 'Prefer to self-describe'.
 EXECUTE. 
 
 VALUE LABELS
@@ -97,7 +98,8 @@ relationship
 2 'In a relationship'
 3 'Married'
 4 'Divorced'
-5 'Widowed'.
+5 'Widowed'
+6 'Prefer to not say'.
 EXECUTE. 
 
 VALUE LABELS
@@ -116,7 +118,8 @@ EXECUTE.
 VALUE LABELS
 home
 1 'Yes'
-2 'No'.
+2 'No'
+3 'Both'.
 EXECUTE.
 
 VALUE LABELS
@@ -143,4 +146,89 @@ income
 8 'Prefer not to say'.
 EXECUTE.
 
+RECODE age gender s_orientation relationship race home dependent first_gen income eff_help eff_self 
+    eff_connect eff_coping eff_control iris_r iris_h iris_cs iris_pp ppass_limits ppass_reason 
+    ppass_aware ppass_threat ppass_guilt ppass_goals ppass_as ppass_pc sdt_autonomy sdt_competence 
+    sdt_relatedness bnsr_autonomy bnsr_competence bnsr_relatedness cerq_selfblame cerq_acceptance 
+    cerq_rumination cerq_refocusing cerq_planning cerq_reappraisal cerq_perspective 
+    cerq_catastrophizing cerq_otherblame ders_nonaccept ders_goals ders_impulse ders_awareness 
+    ders_strategies ders_clarity ders_total (SYSMIS=9999).
+EXECUTE.
+
+
+FREQUENCIES VARIABLES=age gender s_orientation relationship race home dependent first_gen income 
+    eff_help eff_self eff_connect eff_coping eff_control iris_r iris_h iris_cs iris_pp ppass_limits 
+    ppass_reason ppass_aware ppass_threat ppass_guilt ppass_goals ppass_as ppass_pc sdt_autonomy 
+    sdt_competence sdt_relatedness bnsr_autonomy bnsr_competence bnsr_relatedness cerq_selfblame 
+    cerq_acceptance cerq_rumination cerq_refocusing cerq_planning cerq_reappraisal cerq_perspective 
+    cerq_catastrophizing cerq_otherblame ders_nonaccept ders_goals ders_impulse ders_awareness 
+    ders_strategies ders_clarity ders_total
+  /ORDER=ANALYSIS.
+
+
+
+EXAMINE VARIABLES=eff_help eff_self eff_connect eff_coping eff_control
+  /PLOT BOXPLOT STEMLEAF NPPLOT
+  /COMPARE GROUPS
+  /STATISTICS DESCRIPTIVES
+  /CINTERVAL 95
+  /MISSING LISTWISE
+  /NOTOTAL.
+
+
+
+EXAMINE VARIABLES=iris_r iris_h iris_cs iris_pp
+  /PLOT BOXPLOT STEMLEAF NPPLOT
+  /COMPARE GROUPS
+  /STATISTICS DESCRIPTIVES
+  /CINTERVAL 95
+  /MISSING LISTWISE
+  /NOTOTAL.
+
+
+
+EXAMINE VARIABLES=ppass_as ppass_pc
+  /PLOT BOXPLOT STEMLEAF NPPLOT
+  /COMPARE GROUPS
+  /STATISTICS DESCRIPTIVES
+  /CINTERVAL 95
+  /MISSING LISTWISE
+  /NOTOTAL.
+
+
+
+EXAMINE VARIABLES=sdt_autonomy sdt_competence sdt_relatedness bnsr_autonomy bnsr_competence 
+    bnsr_relatedness cerq_selfblame cerq_acceptance cerq_rumination cerq_refocusing cerq_planning 
+    cerq_reappraisal cerq_perspective cerq_catastrophizing cerq_otherblame ders_nonaccept ders_goals 
+    ders_impulse ders_awareness ders_strategies ders_clarity ders_total
+  /PLOT BOXPLOT STEMLEAF NPPLOT
+  /COMPARE GROUPS
+  /STATISTICS DESCRIPTIVES
+  /CINTERVAL 95
+  /MISSING LISTWISE
+  /NOTOTAL.
+
+
+
+
+NONPAR CORR
+  /VARIABLES=ppass_as ppass_pc iris_r iris_h iris_cs iris_pp
+  /PRINT=KENDALL TWOTAIL NOSIG FULL
+  /MISSING=PAIRWISE.
+
+CORRELATIONS
+  /VARIABLES=ppass_as ppass_pc iris_r iris_h iris_cs iris_pp
+  /PRINT=TWOTAIL NOSIG FULL
+  /MISSING=PAIRWISE.
+NONPAR CORR
+  /VARIABLES=ppass_as ppass_pc iris_r iris_h iris_cs iris_pp
+  /PRINT=BOTH TWOTAIL NOSIG FULL
+  /MISSING=PAIRWISE.
+
+
+FREQUENCIES VARIABLES=age gender s_orientation relationship race home dependent first_gen income
+  /ORDER=ANALYSIS.
+
+DESCRIPTIVES VARIABLES=age gender s_orientation relationship race home dependent first_gen income
+  /STATISTICS=MEAN STDDEV MIN MAX.
 
