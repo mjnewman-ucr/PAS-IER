@@ -11,14 +11,22 @@ library("moments")
 library("scales")
 library("sjmisc")
 library("pequod")
+library("stargazer")
+library("effects")
 
 #install.packages("moments")
 #install.packages("sjmisc")
-install.packages("pequod")
+#install.packages("pequod")
+#install.packages("stargazer")
+#install.packages("effects")
 
 ds <- read_csv("data/pasier_data_cleaned.csv", col_names = T, na = "NA")
 summary(ds)
 glimpse(ds)
+
+ds$eff_total <- rowMeans(subset(ds, select = c(eff_help:eff_control)), na.rm = T)
+
+
 ##-----------------------------------------------------------------------------
 ##Testing assumptions
 
@@ -35,6 +43,12 @@ ggqqplot(ds$cerq_reappraisal)
 ggqqplot(ds$sdt_autonomy)
 ggqqplot(ds$sdt_competence)
 ggqqplot(ds$sdt_relatedness)
+ggqqplot(ds$eff_total)
+
+shapiro.test(ds$eff_total)
+ggplot(ds, aes(x = eff_total)) + 
+  geom_histogram(bins = 30)
+skewness(ds$eff_total, na.rm = TRUE)
 
 shapiro.test(ds$eff_connect)
 ggplot(ds, aes(x = eff_connect)) + 
@@ -63,7 +77,7 @@ skewness(ds$eff_coping, na.rm = TRUE)
 
 shapiro.test(ds$iris_cs)
 ggplot(ds, aes(x = iris_cs)) + 
-  geom_histogram(bins = 100) + 
+  geom_histogram(bins = 100) 
 skewness(ds$iris_cs, na.rm = TRUE)
 
 
@@ -84,7 +98,7 @@ flatten_corr_matrix <- function(cormat, pmat) {
 df <- select(ds, c(iris_r:ppass_pc, eff_help:eff_control, sdt_autonomy:sdt_relatedness, bnsr_autonomy:cerq_otherblame,
                    ders_nonaccept:ders_total))
 
-df <- select(ds, c(iris_r:iris_pp, ppass_as, ppass_pc))
+df <- select(ds, c(iris_cs, ppass_as, ppass_pc))
 rcorr(as.matrix(df))
 iris_ppass <- rcorr(as.matrix(df))
 flatten_corr_matrix(iris_ppass$r, iris_ppass$P)
@@ -135,7 +149,9 @@ ds$eff_connect_centered <- center_scale(ds$eff_connect)
 ds$eff_self_centered <- center_scale(ds$eff_self)
 ds$eff_control_centered <- center_scale(ds$eff_control)
 ds$eff_help_centered <- center_scale(ds$eff_help)
+ds$eff_total_centered <- center_scale(ds$eff_total)
 ds$iris_cs_centered <- center_scale(ds$iris_cs)
+
 
 
 ####### Multiple regressions with interactions ############
@@ -186,6 +202,10 @@ summary(reg)
 
 reg <- lm(eff_connect_centered ~ as_centered + iris_cs_centered + csXas, data = ds)
 summary(reg)
+
+reg <- lm(eff_total_centered ~ as_centered + iris_cs_centered + csXas, data = ds)
+summary(reg)
+
 ##------------------------------------------------------------------------------
 
 #Parental Control + IER responsiveness
@@ -244,24 +264,146 @@ summary(reg)
 
 #Plotting simple slops
 
-model<-lmres(eff_help~ppass_pc*iris_r_dicho, centered = c("ppass_pc", "iris_r_dicho"), data = ds)
-(S_slopes<-simpleSlope(model, pred = "ppass_pc", mod1 = "iris_r_dicho"))
-(Plot<-PlotSlope(S_slopes))
+#(wrong moderator)
+#model<-lmres(eff_help~ppass_pc*iris_r_dicho, centered = c("ppass_pc", "iris_r_dicho"), data = ds)
+#(S_slopes<-simpleSlope(model, pred = "ppass_pc", mod1 = "iris_r_dicho"))
+#(Plot<-PlotSlope(S_slopes))
 
-model<-lmres(eff_help~ppass_pc*iris_r_dicho, centered = c("ppass_pc", "iris_r_dicho"), data = ds)
-(S_slopes<-simpleSlope(model, pred = "iris_r_dicho", mod1 = "ppass_pc"))
-(Plot<-PlotSlope(S_slopes))
+model1<-lmres(eff_help~ppass_pc*iris_r_dicho, centered = c("ppass_pc", "iris_r_dicho"), data = ds)
+(S_slopes<-simpleSlope(model1, pred = "iris_r_dicho", mod1 = "ppass_pc"))
+(Plot<-PlotSlope(S_slopes, namemod = c("Low Parental Control (-1 SD)", 
+                                       "High Parental Control (+1 SD)"),
+                 namex = "IER Responsiveness", namey = "Perceived Helpfulness of IER"))
 
-model<-lmres(eff_coping~ppass_as*iris_cs, centered = c("ppass_as", "iris_cs"), data = ds)
-(S_slopes<-simpleSlope(model, pred = "iris_cs", mod1 = "ppass_as"))
-(Plot<-PlotSlope(S_slopes))
+model2<-lmres(eff_coping~ppass_as*iris_cs, centered = c("ppass_as", "iris_cs"), data = ds)
+(S_slopes<-simpleSlope(model2, pred = "iris_cs", mod1 = "ppass_as"))
+(Plot<-PlotSlope(S_slopes, namemod = c("Low Parental Autonomy Support (-1 SD)", 
+                                     "High Parental Autonomy Support (+1 SD)"),
+                 namex = "IER Cognitive Support", namey = "Perceived Emotional Coping"))
+
+model3<-lmres(eff_control~ppass_as*iris_cs, centered = c("ppass_as", "iris_cs"), data = ds)
+(S_slopes<-simpleSlope(model3, pred = "iris_cs", mod1 = "ppass_as"))
+(Plot<-PlotSlope(S_slopes, namemod = c("Low Parental Autonomy Support (-1 SD)", 
+                                       "High Parental Autonomy Support (+1 SD)"),
+                 namex = "IER Cognitive Support", namey = "Perceived Control Over Emotions"))
+
+model4<-lmres(eff_control~ppass_pc*iris_cs, centered = c("ppass_pc", "iris_cs"), data = ds)
+(S_slopes<-simpleSlope(model4, pred = "iris_cs", mod1 = "ppass_pc"))
+(Plot<-PlotSlope(S_slopes, namemod = c("Low Parental Control (-1 SD)", 
+                                       "High Parental Control (+1 SD)"),
+                 namex = "IER Cognitive Support", namey = "Perceived Control Over Emotions"))
+
+SS_help_r_pc
+SS_coping_cs_as
+SS_control_cs_as
+SS_control_cs_pc
+
+##----------------------------------------------------------------------------
+
+library("tidyverse")
+library("dplyr")
+library("readr")
+library("lubridate")
+library("Hmisc")
+library("DataExplorer")
+library("ggpubr")
+library("moments")
+library("scales")
+library("sjmisc")
+library("pequod")
+library("stargazer")
+library("effects")
+
+
+ds <- read_csv("data/pasier_data_cleaned.csv", col_names = T, na = "NA")
+
+
+ds$eff_total <- rowMeans(subset(ds, select = c(eff_help:eff_control)), na.rm = T)
+
+
+#Dichotomising IER because it's just too skewed
+
+ds$iris_r_dicho <- dicho(ds$iris_r, dich.by = "md", as.num = T, val.labels = c("low", "high"))
+ds$iris_cs_dicho <- dicho(ds$iris_cs, dich.by = "md", as.num = T, val.labels = c("low", "high"))
+ds$iris_pp_dicho <- dicho(ds$iris_pp, dich.by = "md", as.num = T, val.labels = c("low", "high"))
+ds$iris_h_dicho <- dicho(ds$iris_h, dich.by = "md", as.num = T, val.labels = c("low", "high"))
+
+ds$pc_dicho <- dicho(ds$ppass_pc, dich.by = "md", as.num = T, val.labels = c("low", "high"))
+
+
+#Centering variables 
+
+center_scale <- function(x) {
+  scale(x, scale = FALSE)
+}
+
+ds$as_centered <- center_scale(ds$ppass_as)
+ds$pc_centered <- center_scale(ds$ppass_pc)
+ds$eff_coping_centered <- center_scale(ds$eff_coping)
+ds$eff_connect_centered <- center_scale(ds$eff_connect)
+ds$eff_self_centered <- center_scale(ds$eff_self)
+ds$eff_control_centered <- center_scale(ds$eff_control)
+ds$eff_help_centered <- center_scale(ds$eff_help)
+ds$eff_total_centered <- center_scale(ds$eff_total)
+ds$iris_cs_centered <- center_scale(ds$iris_cs)
 
 
 
-###
-model<-lmres(eff_control~ppass_as*iris_cs, centered = c("ppass_as", "iris_cs"), data = ds)
-(S_slopes<-simpleSlope(model, pred = "iris_cs", mod1 = "ppass_as"))
-(Plot<-PlotSlope(S_slopes))
+
+
+model1 <- lm(eff_coping ~ as_centered + iris_cs_centered, data = ds)
+model2 <- lm(eff_coping ~ as_centered*iris_cs_centered, data = ds)
+
+stargazer(model1, model2, type="text", 
+          column.labels = c("Main Effects", "Interaction"), 
+          intercept.bottom = FALSE, 
+          single.row=FALSE,     
+          notes.append = FALSE, 
+          header=FALSE) 
+
+cs_sd <- c(mean(ds$iris_cs_centered, na.rm = T)-sd(ds$iris_cs_centered, na.rm = T),
+           mean(ds$iris_cs_centered, na.rm = T),
+           mean(ds$iris_cs_centered, na.rm = T)+sd(ds$iris_cs_centered, na.rm = T))
+cs_sd <- round(cs_sd, 2)
+
+as_sd <- c(mean(ds$as_centered, na.rm = T)-sd(ds$as_centered, na.rm = T),
+           mean(ds$as_centered, na.rm = T),
+           mean(ds$as_centered, na.rm = T)+sd(ds$as_centered, na.rm = T))
+
+as_sd <- round(as_sd, 2)
+as_sd
+
+inter_sd <- effect(c("as_centered*iris_cs_centered"), model2,
+                   xlevels=list(as_centered=c(-1.15, 1.15),
+                                iris_cs_centered=c(-1.78, 1.78))) 
+inter_sd <- as.data.frame(inter_sd)
+
+inter_sd$as <-factor(inter_sd$as_centered,
+                    levels=c(-1.15, 1.15),
+                    labels=c("-1 SD below mean", "+1 SD above mean"))
+
+inter_sd$cs<-factor(inter_sd$iris_cs_centered,
+                    levels=c(-1.78, 1.78),
+                    labels=c("-1 SD", "+1 SD"))
+coping_cs_as_SS <- ggplot(data = inter_sd, aes(x=cs, y=fit, group=as))+
+  geom_line(size=1, aes(color=as))+ #Can adjust the thickness of your lines
+  geom_point(aes(colour = as), size=2)+ #Can adjust the size of your points
+  geom_ribbon(aes(ymin=fit-se, ymax=fit+se),fill="lightgrey",alpha=.6)+ #Can adjust your error bars
+  ylab("Perceived Ability to Cope After IER")+ #Adds a label to the y-axis
+  xlab("Cognitive Support from Parent (IER)")+ #Adds a label to the x-axis
+  ggtitle("  IER & Autonomy Support Interaction")+
+  theme_bw()+ #Removes the gray background 
+  theme(panel.grid.major=element_blank(),
+        panel.grid.minor=element_blank(),
+        legend.key = element_blank())+ #Removes the lines 
+  scale_fill_grey() 
+
+coping_cs_as_SS + labs(color = "Autonomy Support") + 
+  theme(plot.title = element_text(size=14, face="bold"),
+        axis.title.x = element_text(color = "grey40", size=14, face="bold"),
+        axis.title.y = element_text(color = "grey40", size=14, face="bold"))
+
+
 
 
 
