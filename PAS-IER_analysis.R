@@ -22,6 +22,7 @@ library("effects")
 
 ds <- read_csv("data/pasier_data_cleaned.csv", col_names = T, na = "NA")
 summary(ds)
+describe(ds)
 glimpse(ds)
 
 ds$eff_total <- rowMeans(subset(ds, select = c(eff_help:eff_control)), na.rm = T)
@@ -77,7 +78,7 @@ skewness(ds$eff_coping, na.rm = TRUE)
 
 shapiro.test(ds$iris_cs)
 ggplot(ds, aes(x = iris_cs)) + 
-  geom_histogram(bins = 100) 
+  geom_histogram(bins = 30) 
 skewness(ds$iris_cs, na.rm = TRUE)
 
 
@@ -196,6 +197,8 @@ reg <- lm(eff_self_centered ~ as_centered + iris_cs_centered + csXas, data = ds)
 summary(reg)
 
 ##SIG---------
+reg <- lm(eff_coping_centered ~ as_centered + iris_cs_centered, data = ds)
+summary(reg)
 reg <- lm(eff_coping_centered ~ as_centered + iris_cs_centered + csXas, data = ds)
 summary(reg)
 ##------------
@@ -317,8 +320,16 @@ library("effects")
 
 ds <- read_csv("data/pasier_data_cleaned.csv", col_names = T, na = "NA")
 
+as_c <- ds$as_centered
+cs_c <- ds$iris_cs_centered
+summary(ds$as_centered, na.rm=T)
+summary(ds$iris_cs_centered, na.rm=T)
 
+sd(as_c, na.rm=T)
+sd(cs_c, na.rm=T)
 ds$eff_total <- rowMeans(subset(ds, select = c(eff_help:eff_control)), na.rm = T)
+
+df <- select(ds, c(eff_coping, ppass_as, iris_cs, iris_r, iris_pp, iris_h))
 
 
 #Dichotomising IER because it's just too skewed
@@ -349,10 +360,36 @@ ds$iris_cs_centered <- center_scale(ds$iris_cs)
 
 
 
+ds$csXas <- ds$as_centered*ds$iris_cs_centered
+reg <- lm(eff_coping_centered ~ as_centered + iris_cs_centered, data = ds)
+summary(reg)
+reg <- lm(eff_coping ~ as_centered + iris_cs_centered + csXas, data = ds)
+summary(reg)
 
+model_s<-lmres(eff_coping~ppass_as*iris_cs, centered = c("ppass_as", "iris_cs"), data = ds)
+(S_slopes<-simpleSlope(model_s, pred = "iris_cs", mod1 = "ppass_as"))
+(Plot<-PlotSlope(S_slopes, namemod = c("Low Parental Autonomy Support (-1 SD)", 
+                                       "High Parental Autonomy Support (+1 SD)"),
+                 namex = "IER Cognitive Support", namey = "Perceived Emotional Coping"))
+
+summary(S_slopes)
+S_slopes
 
 model1 <- lm(eff_coping ~ as_centered + iris_cs_centered, data = ds)
-model2 <- lm(eff_coping ~ as_centered*iris_cs_centered, data = ds)
+(model2 <- lm(eff_coping ~ as_centered*iris_cs_centered, data = ds))
+
+ds$iris_r_dicho <- as.factor(ds$iris_r_dicho)
+
+(model3 <- lm(eff_coping ~ as_centered*iris_r_dicho, data = ds))
+summary(model3)
+
+(model4 <- lm(eff_connect ~ as_centered+iris_r_dicho, data = ds))
+(model5 <- lm(eff_connect ~ as_centered*iris_r_dicho, data = ds))
+anova(model4, model5)
+
+summary(model5)
+
+describe(ds)
 
 stargazer(model1, model2, type="text", 
           column.labels = c("Main Effects", "Interaction"), 
@@ -384,7 +421,7 @@ inter_sd$as <-factor(inter_sd$as_centered,
 
 inter_sd$cs<-factor(inter_sd$iris_cs_centered,
                     levels=c(-1.78, 1.78),
-                    labels=c("-1 SD", "+1 SD"))
+                    labels=c("Less Cognitive Support", "More Cognitive Support"))
 coping_cs_as_SS <- ggplot(data = inter_sd, aes(x=cs, y=fit, group=as))+
   geom_line(size=1, aes(color=as))+ #Can adjust the thickness of your lines
   geom_point(aes(colour = as), size=2)+ #Can adjust the size of your points
@@ -403,8 +440,40 @@ coping_cs_as_SS + labs(color = "Autonomy Support") +
         axis.title.x = element_text(color = "grey40", size=14, face="bold"),
         axis.title.y = element_text(color = "grey40", size=14, face="bold"))
 
+anova(model1, model2)
 
+rs1 <- summary(model1)$r.squared
 
+rs2 <- summary(model2)$r.squared
 
+library(interactions)
+library(sandwich)
+library(jtools)
+library(vcov)
+library(apaTables)
 
+simpleslope <- sim_slopes(model = model2, 
+           pred = "iris_cs_centered",
+           modx = "as_centered")
+
+ds$iris_r_dicho <- as.numeric(ds$iris_r_dicho)
+
+simpleslope <- sim_slopes(model = model4, 
+                          pred = "iris_r_dicho",
+                          modx = "as_centered")
+simpleslope
+
+cov2cor(vcov(model2, complete = T))
+sqrt(diag(vcov(model2)))
+
+apa.cor.table(
+  df,
+  filename = "correlations_SAS.doc",
+  table.number = NA,
+  show.conf.interval = TRUE,
+  show.sig.stars = TRUE,
+  landscape = TRUE
+)
+
+apa.reg.table(model4)
 
