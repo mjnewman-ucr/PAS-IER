@@ -14,11 +14,6 @@ library("pequod")
 library("stargazer")
 library("effects")
 
-#install.packages("moments")
-#install.packages("sjmisc")
-#install.packages("pequod")
-#install.packages("stargazer")
-#install.packages("effects")
 
 ds <- read_csv("data/pasier_data_cleaned.csv", col_names = T, na = "NA")
 summary(ds)
@@ -78,8 +73,58 @@ skewness(ds$eff_coping, na.rm = TRUE)
 
 shapiro.test(ds$iris_cs)
 ggplot(ds, aes(x = iris_cs)) + 
-  geom_histogram(bins = 30) 
+  geom_histogram(bins = 100) 
 skewness(ds$iris_cs, na.rm = TRUE)
+
+shapiro.test(ds$iris_r)
+ggplot(ds, aes(x = iris_r)) + 
+  geom_histogram(bins = 100) 
+skewness(ds$iris_r, na.rm = TRUE)
+
+shapiro.test(ds$ders_total)
+ggplot(ds, aes(x = ders_total)) + 
+  geom_histogram(bins = 30) 
+skewness(ds$ders_total, na.rm = TRUE)
+
+shapiro.test(ds$ders_goals)
+ggplot(ds, aes(x = ders_goals)) + 
+  geom_histogram(bins = 30) 
+skewness(ds$ders_goals, na.rm = TRUE)
+
+shapiro.test(ds$ders_awareness)
+ggplot(ds, aes(x = ders_awareness)) + 
+  geom_histogram(bins = 30) 
+skewness(ds$ders_awareness, na.rm = TRUE)
+
+shapiro.test(ds$ders_clarity)
+ggplot(ds, aes(x = ders_clarity)) + 
+  geom_histogram(bins = 30) 
+skewness(ds$ders_clarity, na.rm = TRUE)
+
+shapiro.test(ds$ders_strategies)
+ggplot(ds, aes(x = ders_strategies)) + 
+  geom_histogram(bins = 30) 
+skewness(ds$ders_strategies, na.rm = TRUE)
+
+shapiro.test(ds$ders_impulse)
+ggplot(ds, aes(x = ders_impulse)) + 
+  geom_histogram(bins = 30) 
+skewness(ds$ders_impulse, na.rm = TRUE)
+
+shapiro.test(ds$ders_nonaccept)
+ggplot(ds, aes(x = ders_nonaccept)) + 
+  geom_histogram(bins = 30) 
+skewness(ds$ders_nonaccept, na.rm = TRUE)
+
+shapiro.test(ds$cerq_reappraisal)
+ggplot(ds, aes(x = cerq_reappraisal)) + 
+  geom_histogram(bins = 100) 
+skewness(ds$cerq_reappraisal, na.rm = TRUE)
+
+shapiro.test(ds$cerq_perspective)
+ggplot(ds, aes(x = cerq_perspective)) + 
+  geom_histogram(bins = 100) 
+skewness(ds$cerq_perspective, na.rm = TRUE)
 
 
 ## Survey Descriptives
@@ -145,13 +190,15 @@ center_scale <- function(x) {
 
 ds$as_centered <- center_scale(ds$ppass_as)
 ds$pc_centered <- center_scale(ds$ppass_pc)
+ds$iris_cs_centered <- center_scale(ds$iris_cs)
+
 ds$eff_coping_centered <- center_scale(ds$eff_coping)
 ds$eff_connect_centered <- center_scale(ds$eff_connect)
 ds$eff_self_centered <- center_scale(ds$eff_self)
 ds$eff_control_centered <- center_scale(ds$eff_control)
 ds$eff_help_centered <- center_scale(ds$eff_help)
 ds$eff_total_centered <- center_scale(ds$eff_total)
-ds$iris_cs_centered <- center_scale(ds$iris_cs)
+
 
 
 
