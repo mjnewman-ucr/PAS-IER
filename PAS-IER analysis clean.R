@@ -116,3 +116,12 @@ summary(reg)
 ##------------
 
 summary(aov(eff_control ~ as_centered + iris_r_dicho, data = ds))
+
+library(emmeans)
+
+reg <- lm(eff_control~as_centered*iris_r_dicho,data=ds)
+summary(reg)
+emtrends(reg, ~ iris_r_dicho, var="as_centered")
+emtrends(reg, pairwise ~ iris_r_dicho, var="as_centered")
+
+
