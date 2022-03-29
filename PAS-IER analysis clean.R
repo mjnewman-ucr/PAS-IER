@@ -115,6 +115,12 @@ reg <- lm(eff_coping ~ as_centered + iris_cs_centered + csXas, data = ds)
 summary(reg)
 ##------------
 
+reg <- lm(eff_total ~ as_centered + iris_cs_centered, data = ds)
+summary(reg)
+reg <- lm(eff_total ~ as_centered + iris_cs_centered + csXas, data = ds)
+summary(reg)
+
+
 summary(aov(eff_control ~ as_centered + iris_r_dicho, data = ds))
 
 library(emmeans)
