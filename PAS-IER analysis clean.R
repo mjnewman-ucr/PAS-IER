@@ -13,6 +13,7 @@ library("sjmisc")
 library("pequod")
 library("stargazer")
 library("effects")
+library("emmeans")
 
 
 ds <- read_csv("data/pasier_data_cleaned.csv", col_names = T, na = "NA")
@@ -58,10 +59,16 @@ center_scale <- function(x) {
 ds$as_centered <- center_scale(ds$ppass_as)
 ds$pc_centered <- center_scale(ds$ppass_pc)
 ds$iris_cs_centered <- center_scale(ds$iris_cs)
+ds$iris_r_centered <- center_scale(ds$iris_r)
+ds$iris_pp_centered <- center_scale(ds$iris_pp)
+ds$iris_h_centered <- center_scale(ds$iris_h)
 ds$ders_total_centered <- center_scale(ds$ders_total)
 
 #Interaction terms
 ds$csXas <- ds$as_centered*ds$iris_cs_centered
+ds$rXas <- ds$as_centered*ds$iris_r_centered
+ds$ppXas <- ds$as_centered*ds$iris_pp_centered
+ds$hXas <- ds$as_centered*ds$iris_h_centered
 ds$csXders <- ds$iris_cs_centered*ds$ders_total_centered
 
 
@@ -93,8 +100,55 @@ t.test(eff_coping ~ iris_cs_dicho, data = ds)
 wilcox.test(eff_coping ~ iris_cs_dicho, data = ds)
 cor.test(ds$eff_coping, ds$iris_cs_dicho, method = "kendall")
 
+t.test(eff_coping ~ iris_pp_dicho, data = ds)
+wilcox.test(eff_coping ~ iris_pp_dicho, data = ds)
+cor.test(ds$eff_coping, ds$iris_pp_dicho, method = "kendall")
+
+t.test(eff_coping ~ iris_h_dicho, data = ds)
+wilcox.test(eff_coping ~ iris_h_dicho, data = ds)
+cor.test(ds$eff_coping, ds$iris_h_dicho, method = "kendall")
+
 
 ####### Multiple regressions with interactions ############
+
+####Coping: Parental autonomy support + 4 IRIS subscales
+
+reg1 <- lm(eff_coping ~ as_centered + iris_cs_centered, data = ds)
+summary(reg1)
+reg1 <- lm(eff_coping ~ as_centered + iris_cs_centered + csXas, data = ds)
+summary(reg1)
+
+reg2 <- lm(eff_coping ~ as_centered + iris_r_centered, data = ds)
+summary(reg2)
+reg2 <- lm(eff_coping ~ as_centered + iris_r_centered + rXas, data = ds)
+summary(reg2)
+
+reg3 <- lm(eff_coping ~ as_centered + iris_pp_centered, data = ds)
+summary(reg3)
+reg3 <- lm(eff_coping ~ as_centered + iris_pp_centered + ppXas, data = ds)
+summary(reg3)
+
+reg4 <- lm(eff_coping ~ as_centered + iris_h_centered, data = ds)
+summary(reg4)
+reg4 <- lm(eff_coping ~ as_centered + iris_h_centered + hXas, data = ds)
+summary(reg4)
+
+####Coping: Parental autonomy support + 3 IRIS subscales (dicho)
+
+reg2d <- lm(eff_coping ~ as_centered + iris_r_dicho, data = ds)
+summary(reg2d)
+reg2d <- lm(eff_coping ~ as_centered*iris_r_dicho, data = ds)
+summary(reg2d)
+
+reg3d <- lm(eff_coping ~ as_centered + iris_pp_dicho, data = ds)
+summary(reg3d)
+reg3d <- lm(eff_coping ~ as_centered*iris_pp_dicho, data = ds)
+summary(reg3d)
+
+reg4d <- lm(eff_coping ~ as_centered + iris_h_dicho, data = ds)
+summary(reg4d)
+reg4d <- lm(eff_coping ~ as_centered*iris_h_dicho, data = ds)
+summary(reg4d)
 
 ##Parental autonomy support + ier cognitive support
 
@@ -123,7 +177,7 @@ summary(reg)
 
 summary(aov(eff_control ~ as_centered + iris_r_dicho, data = ds))
 
-library(emmeans)
+
 
 reg <- lm(eff_control~as_centered*iris_r_dicho,data=ds)
 summary(reg)
@@ -131,3 +185,20 @@ emtrends(reg, ~ iris_r_dicho, var="as_centered")
 emtrends(reg, pairwise ~ iris_r_dicho, var="as_centered")
 
 
+model_s<-lmres(eff_coping~ppass_as*iris_cs, centered = c("ppass_as", "iris_cs"), data = ds)
+(S_slopes<-simpleSlope(model_s, pred = "iris_cs", mod1 = "ppass_as"))
+(Plot<-PlotSlope(S_slopes, namemod = c("Low Parental Autonomy Support (-1 SD)", 
+                                       "High Parental Autonomy Support (+1 SD)"),
+                 namex = "IER Cognitive Support", namey = "Perceived Emotional Coping"))
+
+model_s<-lmres(eff_coping~ppass_as*iris_r, centered = c("ppass_as", "iris_r"), data = ds)
+(S_slopes<-simpleSlope(model_s, pred = "iris_r", mod1 = "ppass_as"))
+(Plot<-PlotSlope(S_slopes, namemod = c("Low Parental Autonomy Support (-1 SD)", 
+                                       "High Parental Autonomy Support (+1 SD)"),
+                 namex = "IER Responsiveness", namey = "Perceived Emotional Coping"))
+
+model_s<-lmres(eff_coping~ppass_as*iris_pp, centered = c("ppass_as", "iris_pp"), data = ds)
+(S_slopes<-simpleSlope(model_s, pred = "iris_pp", mod1 = "ppass_as"))
+(Plot<-PlotSlope(S_slopes, namemod = c("Low Parental Autonomy Support (-1 SD)", 
+                                       "High Parental Autonomy Support (+1 SD)"),
+                 namex = "IER Physical Presence", namey = "Perceived Emotional Coping"))

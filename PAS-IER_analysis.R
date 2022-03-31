@@ -81,6 +81,16 @@ ggplot(ds, aes(x = iris_r)) +
   geom_histogram(bins = 100) 
 skewness(ds$iris_r, na.rm = TRUE)
 
+shapiro.test(ds$iris_pp)
+ggplot(ds, aes(x = iris_pp)) + 
+  geom_histogram(bins = 100) 
+skewness(ds$iris_pp, na.rm = TRUE)
+
+shapiro.test(ds$iris_h)
+ggplot(ds, aes(x = iris_h)) + 
+  geom_histogram(bins = 100) 
+skewness(ds$iris_h, na.rm = TRUE)
+
 shapiro.test(ds$ders_total)
 ggplot(ds, aes(x = ders_total)) + 
   geom_histogram(bins = 30) 
