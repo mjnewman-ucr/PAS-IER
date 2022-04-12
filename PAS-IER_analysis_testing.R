@@ -509,6 +509,7 @@ library(jtools)
 library(vcov)
 library(apaTables)
 
+
 simpleslope <- sim_slopes(model = model2, 
            pred = "iris_cs_centered",
            modx = "as_centered")
@@ -542,6 +543,8 @@ summary(reg)
 emtrends(reg, ~ iris_r_dicho, var="as_centered")
 emtrends(reg, pairwise ~ iris_r_dicho, var="as_centered")
 
+##------------------------------------------------------------------------------
+
 describe(ds$parent)
 describe(ds$location)
 describe(ds$seeking)
@@ -549,6 +552,8 @@ describe(ds$seeking)
 t.test(eff_coping ~ seeking, data = ds)
 wilcox.test(eff_coping ~ seeking, data = ds)
 cor.test(ds$eff_coping, ds$seeking, method = "kendall")
+
+t.test(ppass_as ~ seeking, data = ds)
 
 t.test(iris_cs ~ seeking, data = ds)
 cor.test(ds$iris_cs, ds$seeking, method = "kendall")

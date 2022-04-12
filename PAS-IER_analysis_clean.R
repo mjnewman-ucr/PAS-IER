@@ -19,6 +19,8 @@ library("emmeans")
 ds <- read_csv("data/pasier_data_cleaned.csv", col_names = T, na = "NA")
 
 ds$eff_total <- rowMeans(subset(ds, select = c(eff_help:eff_control)), na.rm = T)
+ds$eff_comp <- rowMeans(subset(ds, select = c(eff_help, eff_coping, eff_control)), na.rm = T)
+
 
 ## Survey Descriptives
 
@@ -32,6 +34,22 @@ flatten_corr_matrix <- function(cormat, pmat) {
     p = pmat[ut]
   )
 }
+describe(ds)
+glimpse(ds)
+
+demos <- select(ds, c(ID:seeking))
+describe(demos)
+summary(demos)
+sd(demos$age, na.rm = T)
+
+apa.cor.table(
+  demos,
+  filename = "descriptives.doc",
+  table.number = NA,
+  show.conf.interval = TRUE,
+  show.sig.stars = TRUE,
+  landscape = TRUE
+)
 
 df <- select(ds, c(iris_r:ppass_pc, eff_help:eff_control, sdt_autonomy:sdt_relatedness, bnsr_autonomy:cerq_otherblame,
                    ders_nonaccept:ders_total))
@@ -118,20 +136,28 @@ summary(reg1)
 reg1 <- lm(eff_coping ~ as_centered + iris_cs_centered + csXas, data = ds)
 summary(reg1)
 
+apa.reg.table(reg1, filename = "reg_cs.doc")
+
 reg2 <- lm(eff_coping ~ as_centered + iris_r_centered, data = ds)
 summary(reg2)
 reg2 <- lm(eff_coping ~ as_centered + iris_r_centered + rXas, data = ds)
 summary(reg2)
+
+apa.reg.table(reg2, filename = "reg_r.doc")
 
 reg3 <- lm(eff_coping ~ as_centered + iris_pp_centered, data = ds)
 summary(reg3)
 reg3 <- lm(eff_coping ~ as_centered + iris_pp_centered + ppXas, data = ds)
 summary(reg3)
 
+apa.reg.table(reg3, filename = "reg_pp.doc")
+
 reg4 <- lm(eff_coping ~ as_centered + iris_h_centered, data = ds)
 summary(reg4)
 reg4 <- lm(eff_coping ~ as_centered + iris_h_centered + hXas, data = ds)
 summary(reg4)
+
+apa.reg.table(reg4, filename = "reg_h.doc")
 
 ####Coping: Parental autonomy support + 3 IRIS subscales (dicho)
 
