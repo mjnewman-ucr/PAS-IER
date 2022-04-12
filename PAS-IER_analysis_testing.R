@@ -534,3 +534,86 @@ apa.cor.table(
 
 apa.reg.table(model4)
 
+summary(aov(eff_control ~ as_centered + iris_r_dicho, data = ds))
+
+
+reg <- lm(eff_control~as_centered*iris_r_dicho,data=ds)
+summary(reg)
+emtrends(reg, ~ iris_r_dicho, var="as_centered")
+emtrends(reg, pairwise ~ iris_r_dicho, var="as_centered")
+
+describe(ds$parent)
+describe(ds$location)
+describe(ds$seeking)
+
+t.test(eff_coping ~ seeking, data = ds)
+wilcox.test(eff_coping ~ seeking, data = ds)
+cor.test(ds$eff_coping, ds$seeking, method = "kendall")
+
+t.test(iris_cs ~ seeking, data = ds)
+cor.test(ds$iris_cs, ds$seeking, method = "kendall")
+
+#Combining phone calls with video chats
+ds$location_dicho <- dplyr::recode(ds$location, '3' = 2)
+describe(ds$location_dicho)
+t.test(eff_coping ~ location_dicho, data = ds)
+wilcox.test(eff_coping ~ location_dicho, data = ds)
+t.test(iris_pp ~ location_dicho, data = ds)
+wilcox.test(iris_pp ~ location_dicho, data = ds)
+
+#Combining video chats with in-person (i.e., assuming participant can see parent's face)
+ds$location_dicho2 <- dplyr::recode(ds$location, '3' = 1)
+describe(ds$location_dicho2)
+t.test(eff_coping ~ location_dicho2, data = ds)
+wilcox.test(eff_coping ~ location_dicho2, data = ds)
+
+ds$eff_comp <- rowMeans(subset(ds, select = c(eff_help, eff_coping, eff_control)), na.rm = T)
+cor.test(ds$eff_comp, ds$ppass_as)
+
+plot(ds$eff_comp, ds$ppass_as, main="Scatterplot",
+     xlab="IER effectiveness", ylab="parental autonomy support", pch=20)
+
+plot(ds$eff_comp, ds$ppass_pc, main="Scatterplot",
+     xlab="IER effectiveness", ylab="parental control", pch=20)
+
+plot(ds$eff_comp, ds$iris_pp, main="Scatterplot",
+     xlab="IER effectiveness coping", ylab="IER physical presence", pch=20)
+
+ds_in_person <- ds %>% 
+  filter(location == "1")
+ds_in_person
+
+describe(ds_in_person)
+describe(ds_in_person$iris_pp)
+
+shapiro.test(ds$eff_comp)
+ggplot(ds, aes(x = eff_comp)) + 
+  geom_histogram(bins = 100) 
+skewness(ds$eff_comp, na.rm = TRUE)
+
+shapiro.test(ds_in_person$iris_pp)
+ggplot(ds_in_person, aes(x = iris_pp)) + 
+  geom_histogram(bins = 100) 
+skewness(ds_in_person$iris_pp, na.rm = TRUE)
+
+shapiro.test(ds_in_person$iris_r)
+ggplot(ds_in_person, aes(x = iris_r)) + 
+  geom_histogram(bins = 100) 
+skewness(ds_in_person$iris_r, na.rm = TRUE)
+
+shapiro.test(ds_in_person$iris_cs)
+ggplot(ds_in_person, aes(x = iris_cs)) + 
+  geom_histogram(bins = 100) 
+skewness(ds_in_person$iris_cs, na.rm = TRUE)
+
+cor.test(ds_in_person$eff_coping, ds_in_person$iris_pp)
+
+plot(ds_in_person$eff_comp, ds_in_person$iris_pp, main="Scatterplot",
+     xlab="IER effectiveness coping", ylab="IER physical presence", pch=20)
+
+ds_parent <- ds %>% 
+  filter(!parent == "3")
+describe(ds_parent$parent)
+
+t.test(eff_coping ~ parent, data = ds_parent)
+wilcox.test(eff_coping ~ parent, data = ds_parent)

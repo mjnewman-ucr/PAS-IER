@@ -41,7 +41,7 @@ rcorr(as.matrix(df))
 iris_ppass <- rcorr(as.matrix(df))
 flatten_corr_matrix(iris_ppass$r, iris_ppass$P)
 
-#Dichotomising IER because it's just too skewed
+#Dichotomising certain measures because of possible skewness
 
 ds$iris_r_dicho <- dicho(ds$iris_r, dich.by = "md", as.num = T, val.labels = c("low", "high"))
 ds$iris_cs_dicho <- dicho(ds$iris_cs, dich.by = "md", as.num = T, val.labels = c("low", "high"))
@@ -150,7 +150,7 @@ summary(reg4d)
 reg4d <- lm(eff_coping ~ as_centered*iris_h_dicho, data = ds)
 summary(reg4d)
 
-##Parental autonomy support + ier cognitive support
+##Parental autonomy support + ier cognitive support (various eff_ outcomes)
 
 ##SIG---------
 reg <- lm(eff_control ~ as_centered + iris_cs_centered, data = ds)
@@ -173,16 +173,6 @@ reg <- lm(eff_total ~ as_centered + iris_cs_centered, data = ds)
 summary(reg)
 reg <- lm(eff_total ~ as_centered + iris_cs_centered + csXas, data = ds)
 summary(reg)
-
-
-summary(aov(eff_control ~ as_centered + iris_r_dicho, data = ds))
-
-
-
-reg <- lm(eff_control~as_centered*iris_r_dicho,data=ds)
-summary(reg)
-emtrends(reg, ~ iris_r_dicho, var="as_centered")
-emtrends(reg, pairwise ~ iris_r_dicho, var="as_centered")
 
 
 model_s<-lmres(eff_coping~ppass_as*iris_cs, centered = c("ppass_as", "iris_cs"), data = ds)

@@ -1,16 +1,6 @@
-#> PARKING ON THE DOWNHILL:
-#> 1) Finish cleaning the data... Specifically:
-#>      -recode demographic "other" text responses
-#> 2) Once I have an "official" clean datafile, write a new csv file,
-#>    and start a new script where I start by reading in that clean data file
+##PAS-IER DATA CLEANING
 
-
-#> Description: This script is for my psyc259 workflow project. Since I don't have
-#> data yet, I fabricated some on qualtrics (preview) 
-
-
-#Loading the packages I expect I will need
-
+#Loading the packages
 library("tidyverse")
 library("dplyr")
 library("readr")
@@ -18,22 +8,15 @@ library("lubridate")
 library("Hmisc")
 library("DataExplorer")
 
-
-#Messing around with the qualtRics package
-
-#install.packages("qualtRics")
-
-#Alrighty, seems like it's not possible with API access, but I've requested this from
-#Emilyb and it's forthcoming
-
-
 #-------------------------------------------------------------------------------------------------------------
 
 #READING IN DATA FILE
 
-ds <- read_csv("data/pasier_mar12_2022.csv", col_names = T, na = "9999", name_repair = tolower)
+ds <- read_csv("data/pasier_mar12_2022.csv", col_names = T, na = "9999", 
+               name_repair = tolower)
 colnames <- as.vector(names(ds))
-ds <- read_csv("data/pasier_mar12_2022.csv", col_names = colnames, na = "9999", skip = 15, name_repair = tolower)
+ds <- read_csv("data/pasier_mar12_2022.csv", col_names = colnames, na = "9999", 
+               skip = 15, name_repair = tolower)
 
 
 #-------------------------------------------------------------------------------------------------------------
@@ -49,7 +32,10 @@ glimpse(ds)
 
 #Renaming columns
 ds <- ds %>% rename(date = recordeddate,
-              duration = `duration (in seconds)`)
+                    duration = `duration (in seconds)`,
+                    parent = ierc_3,
+                    location = ierc_5,
+                    seeking = ierc_6)
 
 ds <- ds %>% mutate(ID = 8001:8195)
 
@@ -75,10 +61,13 @@ glimpse(ds)
 #> 2004 = 105
 #> 2005 = 106
 
-#Calculating age
+#Calculating age*
 ds$`age#3_1` <- recode(ds$`age#3_1`, '96' = 1995L, '97' = 1996L, '98' = 1997L, '99' = 1998L, 
                        '100' = 1999L, '101' = 2000L, '102' = 2001L, '103' = 2002L, '104' = 2003L, 
                        '105' = 2004L, '106' = 2005L)
+#*if this doesn't work, it's because a previously called package is masking the 
+#*functionality. Try saving, quitting R, and then only running to code for this
+#*script
 
 ds <- unite(ds, dob, 'age#1_1':'age#3_1', sep = "-", remove = F, na.rm = T)
 
@@ -107,36 +96,36 @@ describe(ds$home_who_9_text)
 #Note: for item "s_orientation" a response of 6 will now be "other"
 
 #home_3_text:
-  #"Go back to visit every weekend"
-  #"Home and Dorm"
-  #"I live on campus in the dorms, but my real home I live with my mom Live with parent sometimes, live with roommates."
-  #"Sometimes with parents, sometimes on campus"
-  #"Live with parent sometimes, live with roommates."
-  #"when I am at home, yes"
+#"Go back to visit every weekend"
+#"Home and Dorm"
+#"I live on campus in the dorms, but my real home I live with my mom Live with parent sometimes, live with roommates."
+#"Sometimes with parents, sometimes on campus"
+#"Live with parent sometimes, live with roommates."
+#"when I am at home, yes"
 #Note: for item "home" a response of 3 will now be "lives partially with parent(s)"
 
 #home_who
-  #Mother 1
-  #Father 2
-  #Brother 3
-  #Sister 4
-  #Spouse or significant other 5
-  #Friend or roommate 6
-  #I live alone 7
-  #I am unhoused (e.g., shelters, cars, streets) 8
-  #Other: (free response) 9
+#Mother 1
+#Father 2
+#Brother 3
+#Sister 4
+#Spouse or significant other 5
+#Friend or roommate 6
+#I live alone 7
+#I am unhoused (e.g., shelters, cars, streets) 8
+#Other: (free response) 9
 #Note: I don't need this data yet, but may use it later 
 
 #home_who_9_text
-  #College Dorm                
-  #Dorm                       
-  #Friends                     
-  #grandma                     
-  #Grandma                    
-  #Grandma
-  #Grandpa
-  #I just moved back to school 
-  #Relative Friend of Family  
+#College Dorm                
+#Dorm                       
+#Friends                     
+#grandma                     
+#Grandma                    
+#Grandma
+#Grandpa
+#I just moved back to school 
+#Relative Friend of Family  
 
 #----------------------------------------------------------------------------------
 
@@ -251,7 +240,7 @@ ds <- ds %>% mutate(sdt_4r = 8 - sdt_4,
 )
 
 ds$sdt_autonomy <- rowMeans(subset(ds, select = c(sdt_1, sdt_4r, sdt_8, sdt_11r, 
-                                                 sdt_14, sdt_17, sdt_20r)), na.rm = T) 
+                                                  sdt_14, sdt_17, sdt_20r)), na.rm = T) 
 
 ds$sdt_competence <- rowMeans(subset(ds, select = c(sdt_3r, sdt_5, sdt_10, sdt_13, 
                                                     sdt_15r, sdt_19r)), na.rm = T) 
@@ -347,15 +336,14 @@ ds <- ds %>% mutate(ders_total = ders_nonaccept + ders_goals + ders_impulse + de
                     + ders_strategies + ders_clarity) 
 
 ##-----------------------------------------------------------------------------
-
 ###WRITE A NEW CSV FILE WITH THIS TIDIED DATA ^^^
 
 clean_ds <- select(ds, c(ID, age, gender, s_orientation, relationship, race, home, dependent:income, 
-                   eff_help:eff_control, iris_r:ppass_pc, sdt_autonomy:sdt_relatedness, 
-                   bnsr_autonomy:cerq_otherblame, ders_nonaccept:ders_total))
+                         parent, location, seeking, eff_help:eff_control, iris_r:ppass_pc, 
+                         sdt_autonomy:sdt_relatedness, bnsr_autonomy:cerq_otherblame, 
+                         ders_nonaccept:ders_total))
 
 write_csv(clean_ds, "data/pasier_data_cleaned.csv")
 
 
 ##-----------------------------------------------------------------------------
-
