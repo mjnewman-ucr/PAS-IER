@@ -47,7 +47,7 @@ glimpse(ds)
 
 ## DEMOGRAPHICS
 
-#For some off reason, year of birth got recoded weirdly by qualtrics.
+#For some odd reason, year of birth got recoded weirdly by qualtrics.
 
 #> 1995 = 96
 #> 1996 = 97
@@ -67,7 +67,7 @@ ds$`age#3_1` <- recode(ds$`age#3_1`, '96' = 1995L, '97' = 1996L, '98' = 1997L, '
                        '105' = 2004L, '106' = 2005L)
 #*if this doesn't work, it's because a previously called package is masking the 
 #*functionality. Try saving, quitting R, and then only running to code for this
-#*script
+#*script... or add dplyr:: in front of recode
 
 ds <- unite(ds, dob, 'age#1_1':'age#3_1', sep = "-", remove = F, na.rm = T)
 

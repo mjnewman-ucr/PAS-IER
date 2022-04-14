@@ -21,6 +21,7 @@ describe(ds)
 glimpse(ds)
 
 ds$eff_total <- rowMeans(subset(ds, select = c(eff_help:eff_control)), na.rm = T)
+ds$eff_comp <- rowMeans(subset(ds, select = c(eff_help, eff_coping, eff_control)), na.rm = T)
 
 
 ##-----------------------------------------------------------------------------
@@ -41,10 +42,20 @@ ggqqplot(ds$sdt_competence)
 ggqqplot(ds$sdt_relatedness)
 ggqqplot(ds$eff_total)
 
+shapiro.test(ds$ppass_as)
+ggplot(ds, aes(x = ppass_as)) + 
+  geom_histogram(bins = 30)
+skewness(ds$ppass_as, na.rm = TRUE)
+
 shapiro.test(ds$eff_total)
 ggplot(ds, aes(x = eff_total)) + 
   geom_histogram(bins = 30)
 skewness(ds$eff_total, na.rm = TRUE)
+
+shapiro.test(ds$eff_comp)
+ggplot(ds, aes(x = eff_comp)) + 
+  geom_histogram(bins = 30)
+skewness(ds$eff_comp, na.rm = TRUE)
 
 shapiro.test(ds$eff_connect)
 ggplot(ds, aes(x = eff_connect)) + 
@@ -73,22 +84,22 @@ skewness(ds$eff_coping, na.rm = TRUE)
 
 shapiro.test(ds$iris_cs)
 ggplot(ds, aes(x = iris_cs)) + 
-  geom_histogram(bins = 100) 
+  geom_histogram(bins = 30) 
 skewness(ds$iris_cs, na.rm = TRUE)
 
 shapiro.test(ds$iris_r)
 ggplot(ds, aes(x = iris_r)) + 
-  geom_histogram(bins = 100) 
+  geom_histogram(bins = 30) 
 skewness(ds$iris_r, na.rm = TRUE)
 
 shapiro.test(ds$iris_pp)
 ggplot(ds, aes(x = iris_pp)) + 
-  geom_histogram(bins = 100) 
+  geom_histogram(bins = 30) 
 skewness(ds$iris_pp, na.rm = TRUE)
 
 shapiro.test(ds$iris_h)
 ggplot(ds, aes(x = iris_h)) + 
-  geom_histogram(bins = 100) 
+  geom_histogram(bins = 30) 
 skewness(ds$iris_h, na.rm = TRUE)
 
 shapiro.test(ds$ders_total)
@@ -128,12 +139,12 @@ skewness(ds$ders_nonaccept, na.rm = TRUE)
 
 shapiro.test(ds$cerq_reappraisal)
 ggplot(ds, aes(x = cerq_reappraisal)) + 
-  geom_histogram(bins = 100) 
+  geom_histogram(bins = 30) 
 skewness(ds$cerq_reappraisal, na.rm = TRUE)
 
 shapiro.test(ds$cerq_perspective)
 ggplot(ds, aes(x = cerq_perspective)) + 
-  geom_histogram(bins = 100) 
+  geom_histogram(bins = 30) 
 skewness(ds$cerq_perspective, na.rm = TRUE)
 
 
