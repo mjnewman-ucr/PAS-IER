@@ -1,5 +1,12 @@
 ##DATA ANALYSIS
 
+#Recommendations
+#> The models we ran for eff_comp didn't look tooooo bad... I could pick the
+#> one that looks the best, and then potentially add the other models to the 
+#> appendices 
+#> If I use eff_coping, it should be an ordinal regression (could use linear, but
+#> that isn't the best science)
+
 library("tidyverse")
 library("dplyr")
 library("readr")
@@ -40,7 +47,8 @@ ggqqplot(ds$cerq_reappraisal)
 ggqqplot(ds$sdt_autonomy)
 ggqqplot(ds$sdt_competence)
 ggqqplot(ds$sdt_relatedness)
-ggqqplot(ds$eff_total)
+ggqqplot(ds$eff_coping)
+
 
 shapiro.test(ds$ppass_as)
 ggplot(ds, aes(x = ppass_as)) + 
@@ -56,6 +64,35 @@ shapiro.test(ds$eff_comp)
 ggplot(ds, aes(x = eff_comp)) + 
   geom_histogram(bins = 30)
 skewness(ds$eff_comp, na.rm = TRUE)
+
+#three options
+#> 1. ignore it (and ask: is this good enough for me)
+(model2 <- lm(eff_comp ~ as_centered*iris_cs_centered, data = ds))
+plot(model2)
+
+#> 2. transformation of dv 
+ggplot(ds, aes(x = eff_comp)) + 
+  geom_histogram(bins = 30) +
+  scale_x_log10()
+(model3 <- lm(log(eff_comp) ~ as_centered*iris_cs_centered, data = ds))
+plot(model3)
+  #three very extreme low values seem to be the issue...
+
+#> 2. Use a different model (instead of linear reg, use a different distribution,
+#> (e.g. gamma distribution (for positive continuous values)))
+model4 <- glm(eff_comp ~ as_centered*iris_cs_centered, data = ds, family = Gamma(link = "log"))
+plot(model4)
+
+#> Don't not include this dv just beacuse of the errors 
+#> 
+#> 3. Robust linear model (uses a students t distribution), which contrains the effect
+#> of the outliers (package is called MASS rlm())
+library(MASS)
+model5 <- rlm(log(eff_comp) ~ as_centered*iris_cs_centered, data = ds)
+plot(model5)
+
+describe(ds$eff_comp)
+summary(ds$eff_comp)
 
 shapiro.test(ds$eff_connect)
 ggplot(ds, aes(x = eff_connect)) + 
