@@ -749,3 +749,32 @@ emtrends(reg, pairwise ~ seeking, var="ppass_as")
 
 
 describe(ds$parent)
+
+#____________________
+
+
+describe(ds$iris_6)
+which(is.na(ds$sdt_1))
+
+ds1 <- select(ds, seeking:ier_eff6)
+ds2 <- select(ds, ppass_1:sdt_24)
+ds3 <- select(ds, bnsr_1:cerq_18)
+ds4 <- select(ds, ders_1:ders_36)
+ds5 <- select(ds, dob:age)
+ds6 <- select(ds, ppass_1:cerq_18)
+
+library("mice")
+md.pattern(ds3, rotate.names = T)
+md.pairs(ds)
+
+#> ds1: no missing data
+#> ds2: 1 participant missing ppass_20, and 1 participant missing lots (45 items)
+#> ds3: 1 participant missing bnsr and cerq_3 (10 items)
+#> ds4: no missing data
+#> ds5: 2 participants who are missing age
+
+which(is.na(ds$age))
+which(is.na(ds$ppass_20))
+
+
+

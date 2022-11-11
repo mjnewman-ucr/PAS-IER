@@ -1,6 +1,6 @@
 #> PAS-IER Main Data Analyses
 #> 
-#> NOTE TO SELF: I THINK I NEED TO REORDER SEEKING
+
 
 
 library("tidyverse")
@@ -23,6 +23,7 @@ library("rstatix")
 library("vcov")
 library("apaTables")
 library("reghelper")
+
 
 #-------------------------------------------------------------------------------------------------------------
 
@@ -235,6 +236,15 @@ summary(strategy_h_model7 <- lm(eff_comp ~ iris_h_centered*seeking, data = ds))
 summary(strategy_h_model7 <- lm(eff_comp ~ iris_h_centered*seeking + as_centered, data = ds))
 
 apa.reg.table(
-  strategy_h_model1,
-  strategy_h_model2,
+  strategy_h_model3,
+  strategy_h_model6,
   filename = NA)
+
+#-------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+

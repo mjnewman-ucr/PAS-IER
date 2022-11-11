@@ -147,6 +147,7 @@ describe(ds$home_who_9_text)
 #> iris_cs = cognitive support (2, 5, 9, 12, 15, 19, 27)
 #> iris_pp = physical presence  (16, 21, 24)
 
+
 ds$iris_r <- rowMeans(subset(ds, select = c(iris_1, iris_4, iris_6, iris_8, iris_11, 
                                             iris_13, iris_14, iris_17, iris_22, iris_25, 
                                             iris_28)), na.rm = T)
@@ -182,6 +183,13 @@ ds <- ds %>% rename(eff_help = ier_eff1,
                     eff_connect = ier_eff3,
                     eff_coping = ier_eff5,
                     eff_control = ier_eff6)
+
+describe(ds$eff_help)
+describe(ds$eff_self)
+describe(ds$eff_connect)
+describe(ds$eff_coping)
+describe(ds$eff_control)
+#No missing data for ier effectiveness
 
 ds$eff_total <- rowMeans(subset(ds, select = c(eff_help:eff_control)), na.rm = T)
 ds$eff_comp <- rowMeans(subset(ds, select = c(eff_help, eff_coping, eff_control)), na.rm = T)
@@ -358,3 +366,64 @@ write_csv(clean_ds, "data/pasier_data_cleaned.csv")
 
 
 ##-----------------------------------------------------------------------------
+## Reliability Stuff
+
+library("tidyverse")
+library("dplyr")
+library("readr")
+library("lubridate")
+library("Hmisc")
+library("DataExplorer")
+library("ggpubr")
+library("moments")
+library("scales")
+library("sjmisc")
+library("pequod")
+library("stargazer")
+library("effects")
+library("emmeans")
+library("lsr")
+library("ggpubr")
+library("rstatix")
+library("vcov")
+library("apaTables")
+library("reghelper")
+
+ds <- read_csv("data/pasier_data_cleaned.csv", col_names = T, na = "NA")
+
+eff_total <- select(ds, c(eff_help:eff_control))
+eff_comp <- select(ds, c(eff_help, eff_coping, eff_control))
+eff_comp2 <- select(ds, c(eff_help, eff_coping, eff_control, eff_self))
+eff_comp3 <- select(ds, c(eff_self, eff_coping, eff_control))
+eff_comp4 <- select(ds, c(eff_self, eff_coping, eff_control, eff_connect))
+
+iris_r <- select(ds, c(iris_1, iris_4, iris_6, iris_8, iris_11, 
+                       iris_13, iris_14, iris_17, iris_22, iris_25, 
+                       iris_28))
+iris_cs <- select(ds, c(iris_2, iris_5, iris_9, iris_12, 
+                        iris_15, iris_19, iris_27))
+iris_pp <- select(ds, c(iris_16, iris_21, iris_24))
+iris_h <- select(ds, c(iris_3, iris_7, iris_10, iris_18, 
+                       iris_20, iris_23, iris_26))
+
+ppass_as <- select(ds, c(ppass_1, ppass_4, ppass_8, ppass_14, ppass_2, ppass_9, 
+                         ppass_19, ppass_23, ppass_7, ppass_13, ppass_16, ppass_24))
+ppass_pc <- select(ds, c(ppass_3, ppass_10, ppass_15, ppass_20, ppass_6, ppass_12, 
+                         ppass_18, ppass_21, ppass_5, ppass_11, ppass_17, ppass_22))
+
+
+library("ltm")
+
+cronbach.alpha(eff_total)
+cronbach.alpha(eff_comp)
+cronbach.alpha(eff_comp2)
+cronbach.alpha(eff_comp3)
+cronbach.alpha(eff_comp4)
+
+cronbach.alpha(iris_r)
+cronbach.alpha(iris_cs)
+cronbach.alpha(iris_pp)
+cronbach.alpha(iris_h)
+
+cronbach.alpha(ppass_as, na.rm = T)
+cronbach.alpha(ppass_pc, na.rm = T)
