@@ -1,4 +1,4 @@
-1##PAS-IER DATA CLEANING
+##PAS-IER DATA CLEANING
 
 #Loading the packages
 library("tidyverse")
@@ -84,6 +84,11 @@ ds$age <- as.numeric(ds$age)
 #Tidying race... recoding responses of multiple as 9
 ds$race <- ifelse(str_length(ds$race) > 1, 9, ds$race)
 
+ds$race <- factor(ds$race,
+                  levels = c(1,2,3,4,5,6,8,9),
+                  labels = c("Asian", "Black", "Latinx", "Pacific Islander", 
+                             "White", "Middle Eastern", "Opt Out", "Multiple"))
+
 #Recoding text demographics
 describe(ds$s_orientation_6_text)
 describe(ds$home_3_text)
@@ -126,6 +131,8 @@ describe(ds$home_who_9_text)
 #Grandpa
 #I just moved back to school 
 #Relative Friend of Family  
+
+
 
 #----------------------------------------------------------------------------------
 
@@ -176,6 +183,11 @@ ds <- ds %>% rename(eff_help = ier_eff1,
                     eff_coping = ier_eff5,
                     eff_control = ier_eff6)
 
+ds$eff_total <- rowMeans(subset(ds, select = c(eff_help:eff_control)), na.rm = T)
+ds$eff_comp <- rowMeans(subset(ds, select = c(eff_help, eff_coping, eff_control)), na.rm = T)
+
+describe(ds$eff_help)
+
 #----------------------------------------------------------------------------------
 
 #> P-PASS: Perceived Parental Autonomy Support Scale (cite)
@@ -213,40 +225,37 @@ ds$ppass_pc <- rowMeans(subset(ds, select = c(ppass_threat, ppass_guilt, ppass_g
 
 #SDT: Basic Psychological Need Satisfaction and Frustration Scale (BPNSNF) (cite)
 
-#Likert scale of 1 - 7
+#NOTE- I originally scored this completely wrong. Luckily, none of my original analyses 
+#used this variable
 
-#> Form three subscale scores, one for the degree to which the person experiences 
-#> satisfaction of each of the three needs. 
-#> 
-#> To do that, you must first reverse score all items that are worded in a negative way 
-#> (i.e., the items shown below with (r) following the items number). To reverse 
-#> score an item, simply subtract the item response from 8. Thus, for example, 
-#> a 2 would be converted to a 6. Once you have reverse scored the items, 
-#> simply average the items on the relevant subscale. They are:
+#Scoring information:
 
-#> Autonomy: 1, 4r, 8, 11r, 14, 17, 20r
-#> Competence: 3r, 5, 10, 13, 15r, 19r
-#> Relatedness: 2, 6, 7r, 9, 12, 16r, 18r, 21
+#Autonomy satisfaction: items 1, 7, 13, 19
+#Autonomy frustration: items 2, 8, 14, 20
+#Competence satisfaction: items 5, 11, 17, 23
+#Competence frustration: items 6, 12, 18, 24
+#Relatedness satisfaction: items 3, 9, 15, 21
+#Relatedness frustration: items 4, 10, 16, 22
 
-ds <- ds %>% mutate(sdt_4r = 8 - sdt_4,
-                    sdt_11r = 8 - sdt_11,
-                    sdt_20r = 8 - sdt_20,
-                    sdt_3r = 8 - sdt_3,
-                    sdt_15r = 8 - sdt_15,
-                    sdt_19r = 8 - sdt_19,
-                    sdt_7r = 8 - sdt_7,
-                    sdt_16r = 8 - sdt_16,
-                    sdt_18r = 8 - sdt_18
-)
+#if I want composite scores I will need to reverse score the _f items individually
+#Actually, no I don't! Just subtract the total score from 72
 
-ds$sdt_autonomy <- rowMeans(subset(ds, select = c(sdt_1, sdt_4r, sdt_8, sdt_11r, 
-                                                  sdt_14, sdt_17, sdt_20r)), na.rm = T) 
 
-ds$sdt_competence <- rowMeans(subset(ds, select = c(sdt_3r, sdt_5, sdt_10, sdt_13, 
-                                                    sdt_15r, sdt_19r)), na.rm = T) 
 
-ds$sdt_relatedness <- rowMeans(subset(ds, select = c(sdt_2, sdt_6, sdt_7r, sdt_9, 
-                                                     sdt_12, sdt_16r, sdt_18r, sdt_21)), na.rm = T) 
+ds$sdt_autonomy_s <- rowSums(subset(ds, select = c(sdt_1, sdt_7, sdt_13, sdt_19)), na.rm = T) 
+ds$sdt_autonomy_f <- rowSums(subset(ds, select = c(sdt_2, sdt_8, sdt_14, sdt_20)), na.rm = T) 
+ds <- ds %>% mutate(sdt_autonomy_fr = 24 - sdt_autonomy_f)
+ds$sdt_autonomy_comp <- rowMeans(subset(ds, select = c(sdt_autonomy_s, sdt_autonomy_fr)), na.rm = T) 
+
+ds$sdt_competence_s <- rowSums(subset(ds, select = c(sdt_5, sdt_11, sdt_17, sdt_23)), na.rm = T) 
+ds$sdt_competence_f <- rowSums(subset(ds, select = c(sdt_6, sdt_12, sdt_18, sdt_24)), na.rm = T)
+ds <- ds %>% mutate(sdt_competence_fr = 24 - sdt_competence_f)
+ds$sdt_competence_comp <- rowMeans(subset(ds, select = c(sdt_competence_s, sdt_competence_fr)), na.rm = T) 
+
+ds$sdt_relatedness_s <- rowSums(subset(ds, select = c(sdt_3, sdt_9, sdt_15, sdt_21)), na.rm = T) 
+ds$sdt_relatedness_f <- rowSums(subset(ds, select = c(sdt_4, sdt_10, sdt_16, sdt_22)), na.rm = T) 
+ds <- ds %>% mutate(sdt_relatedness_fr = 24 - sdt_relatedness_f)
+ds$sdt_relatedness_comp <- rowMeans(subset(ds, select = c(sdt_relatedness_s, sdt_relatedness_fr)), na.rm = T) 
 
 #----------------------------------------------------------------------------------
 
@@ -339,9 +348,11 @@ ds <- ds %>% mutate(ders_total = ders_nonaccept + ders_goals + ders_impulse + de
 ###WRITE A NEW CSV FILE WITH THIS TIDIED DATA ^^^
 
 clean_ds <- select(ds, c(ID, age, gender, s_orientation, relationship, race, home, dependent:income, 
-                         parent, location, seeking, eff_help:eff_control, iris_r:ppass_pc, 
-                         sdt_autonomy:sdt_relatedness, bnsr_autonomy:cerq_otherblame, 
+                         parent, location, seeking, eff_help:eff_control, eff_comp, eff_total, iris_r:ppass_pc, 
+                         sdt_autonomy_s:sdt_relatedness_comp, bnsr_autonomy:cerq_otherblame, 
                          ders_nonaccept:ders_total))
+clean_ds <- select(clean_ds, c(sdt_autonomy_fr, sdt_competence_fr, sdt_relatedness_fr, ID:ders_total))
+clean_ds <- select(clean_ds, ID:ders_total)
 
 write_csv(clean_ds, "data/pasier_data_cleaned.csv")
 

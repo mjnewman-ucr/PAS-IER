@@ -42,6 +42,7 @@ describe(demos)
 summary(demos)
 sd(demos$age, na.rm = T)
 
+
 apa.cor.table(
   demos,
   filename = "descriptives.doc",
@@ -51,8 +52,88 @@ apa.cor.table(
   landscape = TRUE
 )
 
-df <- select(ds, c(iris_r:ppass_pc, eff_help:eff_control, sdt_autonomy:sdt_relatedness, bnsr_autonomy:cerq_otherblame,
+df <- select(ds, c(iris_r:ppass_pc, eff_help:eff_control, eff_total, eff_comp, 
+                   sdt_autonomy_s:sdt_relatedness_comp, bnsr_autonomy:cerq_otherblame,
                    ders_nonaccept:ders_total))
+
+corr <- select(ds, c(iris_cs, iris_r, iris_pp, iris_h, ppass_as, eff_comp))
+rcorr(as.matrix(corr))
+corr_mat <- rcorr(as.matrix(corr))
+flatten_corr_matrix(corr_mat$r, corr_mat$P)
+
+plot(corr$eff_comp, corr$iris_cs, main="Scatterplot",
+     xlab="IER effectiveness", ylab="IER cognitive support", pch=20)
+plot(corr$eff_comp, corr$iris_r, main="Scatterplot",
+     xlab="IER effectiveness", ylab="IER responsiveness", pch=20)
+plot(corr$eff_comp, corr$iris_pp, main="Scatterplot",
+     xlab="IER effectiveness", ylab="IER physical presence", pch=20)
+plot(corr$eff_comp, corr$iris_h, main="Scatterplot",
+     xlab="IER effectiveness", ylab="IER hostility", pch=20)
+
+library(apaTables)
+apa.cor.table(
+  corr,
+  filename = "correlations_SSEA.doc",
+  table.number = NA,
+  show.conf.interval = TRUE,
+  show.sig.stars = TRUE,
+  landscape = TRUE
+)
+
+apa.d.table(
+  iv = seeking,
+  dv = eff_comp,
+  data = ds,
+  filename = "seeking_ttest_SSEA.doc",
+  table.number = NA,
+  show.conf.interval = TRUE,
+  landscape = TRUE
+)
+
+apa.d.table(
+  iv = seeking,
+  dv = ppass_as,
+  data = ds,
+  filename = "seeking2_ttest_SSEA.doc",
+  table.number = NA,
+  show.conf.interval = TRUE,
+  landscape = TRUE
+)
+
+
+center_scale <- function(x) {
+  scale(x, scale = FALSE)
+}
+
+ds$as_centered <- center_scale(ds$ppass_as)
+ds$pc_centered <- center_scale(ds$ppass_pc)
+ds$eff_coping_centered <- center_scale(ds$eff_coping)
+ds$eff_connect_centered <- center_scale(ds$eff_connect)
+ds$eff_self_centered <- center_scale(ds$eff_self)
+ds$eff_control_centered <- center_scale(ds$eff_control)
+ds$eff_help_centered <- center_scale(ds$eff_help)
+ds$eff_total_centered <- center_scale(ds$eff_total)
+ds$iris_cs_centered <- center_scale(ds$iris_cs)
+ds$iris_r_centered <- center_scale(ds$iris_r)
+ds$iris_pp_centered <- center_scale(ds$iris_pp)
+ds$iris_h_centered <- center_scale(ds$iris_h)
+
+
+(iris_model1 <- lm(eff_comp ~ as_centered + iris_cs_centered, data = ds))
+(iris_model2 <- lm(eff_comp ~ as_centered*iris_cs_centered, data = ds))
+apa.reg.table(iris_model2)
+
+(seeking_model1 <- lm(eff_comp ~ as_centered + seeking, data = ds))
+(seeking_model2 <- lm(eff_comp ~ as_centered*seeking, data = ds))
+apa.reg.table(
+  seeking_model1,
+  seeking_model2,
+  filename = "seeking_blocks_interaction.doc")
+
+summary(lm(eff_comp ~ as_centered*iris_r_centered, data = ds))
+summary(lm(eff_comp ~ as_centered*iris_cs_centered, data = ds))
+summary(lm(eff_comp ~ as_centered*iris_pp_centered, data = ds))
+summary(lm(eff_comp ~ as_centered*iris_h_centered, data = ds))
 
 df <- select(ds, c(iris_cs, ppass_as, ppass_pc))
 rcorr(as.matrix(df))

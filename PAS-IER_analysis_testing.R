@@ -29,6 +29,8 @@ glimpse(ds)
 
 ds$eff_total <- rowMeans(subset(ds, select = c(eff_help:eff_control)), na.rm = T)
 ds$eff_comp <- rowMeans(subset(ds, select = c(eff_help, eff_coping, eff_control)), na.rm = T)
+ds$eff_comp2 <- rowMeans(subset(ds, select = c(eff_help, eff_coping, eff_control, 
+                                               eff_self)), na.rm = T)
 
 
 ##-----------------------------------------------------------------------------
@@ -44,10 +46,11 @@ ggqqplot(ds$ders_total)
 ggqqplot(ds$ders_goals) 
 ggqqplot(ds$ders_awareness)
 ggqqplot(ds$cerq_reappraisal)
-ggqqplot(ds$sdt_autonomy)
-ggqqplot(ds$sdt_competence)
-ggqqplot(ds$sdt_relatedness)
-ggqqplot(ds$eff_coping)
+ggqqplot(ds$sdt_autonomy_comp)
+ggqqplot(ds$sdt_competence_comp)
+ggqqplot(ds$sdt_relatedness_comp)
+ggqqplot(ds$eff_comp)
+ggqqplot(ds$eff_total)
 
 
 shapiro.test(ds$ppass_as)
@@ -60,10 +63,35 @@ ggplot(ds, aes(x = eff_total)) +
   geom_histogram(bins = 30)
 skewness(ds$eff_total, na.rm = TRUE)
 
-shapiro.test(ds$eff_comp)
-ggplot(ds, aes(x = eff_comp)) + 
+shapiro.test(ds$eff_comp2)
+ggplot(ds, aes(x = eff_comp2)) + 
   geom_histogram(bins = 30)
-skewness(ds$eff_comp, na.rm = TRUE)
+skewness(ds$eff_comp2, na.rm = TRUE)
+
+shapiro.test(ds$eff_coping)
+ggplot(ds, aes(x = eff_coping)) + 
+  geom_histogram(bins = 30)
+skewness(ds$eff_coping, na.rm = TRUE)
+
+shapiro.test(ds$eff_help)
+ggplot(ds, aes(x = eff_help)) + 
+  geom_histogram(bins = 30)
+skewness(ds$eff_help, na.rm = TRUE)
+
+shapiro.test(ds$eff_control)
+ggplot(ds, aes(x = eff_control)) + 
+  geom_histogram(bins = 30)
+skewness(ds$eff_control, na.rm = TRUE)
+
+shapiro.test(ds$eff_self)
+ggplot(ds, aes(x = eff_self)) + 
+  geom_histogram(bins = 30)
+skewness(ds$eff_self, na.rm = TRUE)
+
+shapiro.test(ds$eff_connect)
+ggplot(ds, aes(x = eff_connect)) + 
+  geom_histogram(bins = 30)
+skewness(ds$eff_connect, na.rm = TRUE)
 
 #three options
 #> 1. ignore it (and ask: is this good enough for me)
@@ -85,7 +113,7 @@ plot(model4)
 
 #> Don't not include this dv just beacuse of the errors 
 #> 
-#> 3. Robust linear model (uses a students t distribution), which contrains the effect
+#> 3. Robust linear model (uses a students t distribution), which constrains the effect
 #> of the outliers (package is called MASS rlm())
 library(MASS)
 model5 <- rlm(log(eff_comp) ~ as_centered*iris_cs_centered, data = ds)
@@ -184,6 +212,21 @@ ggplot(ds, aes(x = cerq_perspective)) +
   geom_histogram(bins = 30) 
 skewness(ds$cerq_perspective, na.rm = TRUE)
 
+shapiro.test(ds$sdt_autonomy_comp)
+ggplot(ds, aes(x = sdt_autonomy_comp)) + 
+  geom_histogram(bins = 30) 
+skewness(ds$sdt_autonomy_comp, na.rm = TRUE)
+
+shapiro.test(ds$sdt_competence_comp)
+ggplot(ds, aes(x = sdt_competence_comp)) + 
+  geom_histogram(bins = 30) 
+skewness(ds$sdt_competence_comp, na.rm = TRUE)
+
+shapiro.test(ds$sdt_relatedness_comp)
+ggplot(ds, aes(x = sdt_relatedness_comp)) + 
+  geom_histogram(bins = 30) 
+skewness(ds$sdt_relatedness_comp, na.rm = TRUE)
+
 
 ## Survey Descriptives
 
@@ -199,8 +242,8 @@ flatten_corr_matrix <- function(cormat, pmat) {
 }
 
 
-df <- select(ds, c(iris_r:ppass_pc, eff_help:eff_control, sdt_autonomy:sdt_relatedness, bnsr_autonomy:cerq_otherblame,
-                   ders_nonaccept:ders_total))
+df <- select(ds, c(iris_r:ppass_pc, eff_help:eff_control, sdt_autonomy_s:sdt_relatedness_comp, 
+                   bnsr_autonomy:cerq_otherblame,ders_nonaccept:ders_total))
 
 df <- select(ds, c(iris_cs, ppass_as, ppass_pc))
 rcorr(as.matrix(df))
@@ -217,10 +260,20 @@ rcorr(as.matrix(df))
 iris_ders <- rcorr(as.matrix(df))
 flatten_corr_matrix(iris_ders$r, iris_ders$P)
 
-df <- select(ds, c(iris_r:iris_pp, sdt_autonomy:sdt_relatedness))
+df <- select(ds, c(iris_r:iris_pp, sdt_autonomy_comp, sdt_competence_comp, sdt_relatedness_comp))
 rcorr(as.matrix(df))
 iris_sdt <- rcorr(as.matrix(df))
 flatten_corr_matrix(iris_sdt$r, iris_sdt$P)
+
+df <- select(ds, c(sdt_autonomy_comp, sdt_competence_comp, sdt_relatedness_comp, ders_nonaccept:ders_total))
+rcorr(as.matrix(df))
+ders_sdt <- rcorr(as.matrix(df))
+flatten_corr_matrix(ders_sdt$r, ders_sdt$P)
+
+df <- select(ds, c(sdt_autonomy_comp, sdt_competence_comp, sdt_relatedness_comp, ppass_as, ppass_pc))
+rcorr(as.matrix(df))
+ppass_sdt <- rcorr(as.matrix(df))
+flatten_corr_matrix(ppass_sdt$r, ppass_sdt$P)
 
 
 ##------------------------------------------------------------------------------
@@ -258,7 +311,8 @@ ds$eff_help_centered <- center_scale(ds$eff_help)
 ds$eff_total_centered <- center_scale(ds$eff_total)
 
 
-
+reg <- lm(ders_total ~ sdt_relatedness + sdt_competence, data = ds)
+summary(reg)
 
 ####### Multiple regressions with interactions ############
 
@@ -596,12 +650,19 @@ emtrends(reg, pairwise ~ iris_r_dicho, var="as_centered")
 describe(ds$parent)
 describe(ds$location)
 describe(ds$seeking)
+describe(ds$home)
 
 t.test(eff_coping ~ seeking, data = ds)
 wilcox.test(eff_coping ~ seeking, data = ds)
 cor.test(ds$eff_coping, ds$seeking, method = "kendall")
 
+t.test(eff_comp ~ seeking, data = ds)
+
 t.test(ppass_as ~ seeking, data = ds)
+
+ds$home_dicho <- dplyr::recode(ds$home, '3' = 2)
+describe(ds$home_dicho)
+t.test(eff_control ~ home_dicho, data = ds)
 
 t.test(iris_cs ~ seeking, data = ds)
 cor.test(ds$iris_cs, ds$seeking, method = "kendall")
@@ -670,3 +731,21 @@ describe(ds_parent$parent)
 
 t.test(eff_coping ~ parent, data = ds_parent)
 wilcox.test(eff_coping ~ parent, data = ds_parent)
+
+ds_dependent <- ds %>% 
+  filter(!income == "8")
+describe(ds_dependent$income)
+
+t.test(income ~ dependent, data = ds_dependent)
+
+summary(aov(eff_comp ~ ppass_as + seeking, data = ds))
+
+
+summary(reg <- lm(eff_comp ~ ppass_as*seeking, data = ds))
+
+library(emmeans)
+
+emtrends(reg, pairwise ~ seeking, var="ppass_as")
+
+
+describe(ds$parent)
