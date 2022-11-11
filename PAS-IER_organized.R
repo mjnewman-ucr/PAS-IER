@@ -94,13 +94,13 @@ plot(ds_cor$eff_comp, ds_cor$iris_h, main="Scatterplot",
 #-------------------------------------------------------------------------------------------------------------
 
 #t-test for IER effectiveness by IER seeking
-t.test(eff_comp ~ seeking, data = ds)
-cohensD(eff_comp ~ seeking, data = ds)
+t.test(eff_total ~ seeking, data = ds)
+cohensD(eff_total ~ seeking, data = ds)
 describe(ds$seeking)
 summary(ds$seeking)
 ds %>%
   group_by(seeking) %>%
-  get_summary_stats(eff_comp, type = "mean_sd")
+  get_summary_stats(eff_total, type = "mean_sd")
 
 #t-test for parental autonomy support by IER seeking (just making sure)
 t.test(ppass_as ~ seeking, data = ds)
@@ -112,9 +112,9 @@ t.test(ppass_as ~ seeking, data = ds)
 
 #Regressions for IER seeking * autonomy support moderation
 
-summary(seeking_model1 <- lm(eff_comp ~ seeking + as_centered, data = ds))
+summary(seeking_model1 <- lm(eff_total ~ seeking + as_centered, data = ds))
 
-summary(seeking_model2 <- lm(eff_comp ~ seeking*as_centered, data = ds))
+summary(seeking_model2 <- lm(eff_total ~ seeking*as_centered, data = ds))
 
 apa.reg.table(
   seeking_model1,
@@ -155,15 +155,15 @@ summary(ds$as_centered)
 #Regressions for IER strategies * autonomy support moderation
 
 #IER: Responsiveness *SIG*
-summary(strategy_r_model1 <- lm(eff_comp ~ iris_r_centered + as_centered, data = ds))
-summary(strategy_r_model2 <- lm(eff_comp ~ iris_r_centered*as_centered, data = ds))
-summary(strategy_r_model3 <- lm(eff_comp ~ iris_r_centered + as_centered + seeking, 
+summary(strategy_r_model1 <- lm(eff_total ~ iris_r_centered + as_centered, data = ds))
+summary(strategy_r_model2 <- lm(eff_total ~ iris_r_centered*as_centered, data = ds))
+summary(strategy_r_model3 <- lm(eff_total ~ iris_r_centered + as_centered + seeking, 
                                 data = ds))
-summary(strategy_r_model4 <- lm(eff_comp ~ iris_r_centered*as_centered + seeking, data = ds))
-summary(strategy_r_model5 <- lm(eff_comp ~ iris_r_centered + as_centered*seeking, data = ds))
-summary(strategy_r_model6 <- lm(eff_comp ~ iris_r_centered*as_centered + 
+summary(strategy_r_model4 <- lm(eff_total ~ iris_r_centered*as_centered + seeking, data = ds))
+summary(strategy_r_model5 <- lm(eff_total ~ iris_r_centered + as_centered*seeking, data = ds))
+summary(strategy_r_model6 <- lm(eff_total ~ iris_r_centered*as_centered + 
                                   as_centered*seeking, data = ds))
-summary(strategy_r_model7 <- lm(eff_comp ~ iris_r_centered*as_centered*seeking, data = ds))
+summary(strategy_r_model7 <- lm(eff_total ~ iris_r_centered*as_centered*seeking, data = ds))
 
 apa.reg.table(
   strategy_r_model1,
@@ -195,15 +195,15 @@ simple_slopes(strategy_r_model2, levels = strategy_r_list_2)
 vcov(strategy_r_model2)
 
 #IER: Cognitive Support
-summary(strategy_cs_model1 <- lm(eff_comp ~ iris_cs_centered + as_centered, data = ds))
-summary(strategy_cs_model2 <- lm(eff_comp ~ iris_cs_centered*as_centered, data = ds))
-summary(strategy_cs_model3 <- lm(eff_comp ~ iris_cs_centered + as_centered + 
+summary(strategy_cs_model1 <- lm(eff_total ~ iris_cs_centered + as_centered, data = ds))
+summary(strategy_cs_model2 <- lm(eff_total ~ iris_cs_centered*as_centered, data = ds))
+summary(strategy_cs_model3 <- lm(eff_total ~ iris_cs_centered + as_centered + 
                                    seeking, data = ds))
-summary(strategy_cs_model4 <- lm(eff_comp ~ iris_cs_centered*as_centered + 
+summary(strategy_cs_model4 <- lm(eff_total ~ iris_cs_centered*as_centered + 
                                    seeking, data = ds))
-summary(strategy_cs_model5 <- lm(eff_comp ~ iris_cs_centered*as_centered + 
+summary(strategy_cs_model5 <- lm(eff_total ~ iris_cs_centered*as_centered + 
                                    seeking*as_centered, data = ds))
-summary(strategy_cs_model6 <- lm(eff_comp ~ iris_cs_centered*as_centered*seeking, data = ds))
+summary(strategy_cs_model6 <- lm(eff_total ~ iris_cs_centered*as_centered*seeking, data = ds))
 
 apa.reg.table(
   strategy_cs_model1,
@@ -211,13 +211,13 @@ apa.reg.table(
   filename = NA)
 
 #IER: Physical Presence (needs more cleaning to weed out virtual IER)
-summary(strategy_pp_model1 <- lm(eff_comp ~ iris_pp_centered + as_centered, data = ds))
-summary(strategy_pp_model2 <- lm(eff_comp ~ iris_pp_centered*as_centered, data = ds))
-summary(strategy_pp_model3 <- lm(eff_comp ~ iris_pp_centered + as_centered + seeking, data = ds))
-summary(strategy_pp_model4 <- lm(eff_comp ~ iris_pp_centered*as_centered + seeking, data = ds))
-summary(strategy_pp_model5 <- lm(eff_comp ~ iris_pp_centered*as_centered + 
+summary(strategy_pp_model1 <- lm(eff_total ~ iris_pp_centered + as_centered, data = ds))
+summary(strategy_pp_model2 <- lm(eff_total ~ iris_pp_centered*as_centered, data = ds))
+summary(strategy_pp_model3 <- lm(eff_total ~ iris_pp_centered + as_centered + seeking, data = ds))
+summary(strategy_pp_model4 <- lm(eff_total ~ iris_pp_centered*as_centered + seeking, data = ds))
+summary(strategy_pp_model5 <- lm(eff_total ~ iris_pp_centered*as_centered + 
                                    seeking*as_centered, data = ds))
-summary(strategy_pp_model6 <- lm(eff_comp ~ iris_pp_centered*as_centered*seeking, data = ds))
+summary(strategy_pp_model6 <- lm(eff_total ~ iris_pp_centered*as_centered*seeking, data = ds))
 
 apa.reg.table(
   strategy_pp_model1,
@@ -225,15 +225,15 @@ apa.reg.table(
   filename = NA)
 
 #IER: Hostility
-summary(strategy_h_model1 <- lm(eff_comp ~ iris_h_centered + as_centered, data = ds))
-summary(strategy_h_model2 <- lm(eff_comp ~ iris_h_centered*as_centered, data = ds))
-summary(strategy_h_model3 <- lm(eff_comp ~ iris_h_centered + as_centered + seeking, data = ds))
-summary(strategy_h_model4 <- lm(eff_comp ~ iris_h_centered*as_centered + seeking, data = ds))
-summary(strategy_h_model5 <- lm(eff_comp ~ iris_h_centered*as_centered + 
+summary(strategy_h_model1 <- lm(eff_total ~ iris_h_centered + as_centered, data = ds))
+summary(strategy_h_model2 <- lm(eff_total ~ iris_h_centered*as_centered, data = ds))
+summary(strategy_h_model3 <- lm(eff_total ~ iris_h_centered + as_centered + seeking, data = ds))
+summary(strategy_h_model4 <- lm(eff_total ~ iris_h_centered*as_centered + seeking, data = ds))
+summary(strategy_h_model5 <- lm(eff_total ~ iris_h_centered*as_centered + 
                                   seeking*as_centered, data = ds))
-summary(strategy_h_model6 <- lm(eff_comp ~ iris_h_centered*as_centered*seeking, data = ds))
-summary(strategy_h_model7 <- lm(eff_comp ~ iris_h_centered*seeking, data = ds))
-summary(strategy_h_model7 <- lm(eff_comp ~ iris_h_centered*seeking + as_centered, data = ds))
+summary(strategy_h_model6 <- lm(eff_total ~ iris_h_centered*as_centered*seeking, data = ds))
+summary(strategy_h_model7 <- lm(eff_total ~ iris_h_centered*seeking, data = ds))
+summary(strategy_h_model7 <- lm(eff_total ~ iris_h_centered*seeking + as_centered, data = ds))
 
 apa.reg.table(
   strategy_h_model3,
@@ -241,10 +241,80 @@ apa.reg.table(
   filename = NA)
 
 #-------------------------------------------------------------------------------------------------------------
+#Exploring three-way hostility interaction
+
+ds_sought <- ds %>% filter(seeking=='Yes')
+summary(lm(eff_total ~ iris_h_centered*as_centered, data = ds_sought))
+
+ds_unsought <- ds %>% filter(seeking=='No')
+summary(lm(eff_total ~ iris_h_centered*as_centered, data = ds_unsought))
+
+#> Hmm, didn't see any differences in significance... does that mean that parental
+#> autonomy support may be the driving moderator? Obviously both autonomy support
+#> and seeking are theoretically moderating hostility, but it's interesting that
+#> the interaction didn't hold when I split the file by seeking
+
+#---------
+#Messing around with responsiveness*as*seeking
+#This was such a clusterfuck. I had to re-center all my variables
+
+#Sought
+
+ds_sought$as_centered <- center_scale(ds_sought$ppass_as)
+ds_sought$pc_centered <- center_scale(ds_sought$ppass_pc)
+ds_sought$iris_cs_centered <- center_scale(ds_sought$iris_cs)
+ds_sought$iris_r_centered <- center_scale(ds_sought$iris_r)
+ds_sought$iris_pp_centered <- center_scale(ds_sought$iris_pp)
+ds_sought$iris_h_centered <- center_scale(ds_sought$iris_h)
+
+summary(split_sought_strategy_r_model1 <- lm(eff_total ~ iris_r_centered*as_centered, data = ds_sought))
+
+sought_ppass_a <- mean(ds_sought$as_centered, na.rm = T) + sd(ds_sought$as_centered, na.rm = T)
+sought_ppass_m <- mean(ds_sought$as_centered, na.rm = T)
+sought_ppass_b <- mean(ds_sought$as_centered, na.rm = T) - sd(ds_sought$as_centered, na.rm = T)
+
+(sought_ppass_a_r <- round(sought_ppass_a,1))
+(sought_ppass_m_r <- round(sought_ppass_m,1))
+(sought_ppass_b_r <- round(sought_ppass_b,1))
+
+describe(ds_sought$iris_r_centered)
+
+(split_sought_strategy_r_list <- list(as_centered = c(sought_ppass_a_r, sought_ppass_b_r),iris_r_centered = 
+                           seq(-5, 3, by = 1)))
+
+emmip(split_sought_strategy_r_model1, as_centered ~ iris_r_centered, at = split_sought_strategy_r_list, CIs = TRUE)
+
+(split_sought_strategy_r_list_2 <- list(as_centered = c(sought_ppass_a_r, sought_ppass_b_r, 'sstest'), iris_r_centered = 
+                             c(seq(-5, 3, by = 1), 'sstest')))
+simple_slopes(split_sought_strategy_r_model1, levels = split_sought_strategy_r_list_2)
 
 
+#Unsought
+
+ds_unsought$as_centered <- center_scale(ds_unsought$ppass_as)
+ds_unsought$pc_centered <- center_scale(ds_unsought$ppass_pc)
+ds_unsought$iris_cs_centered <- center_scale(ds_unsought$iris_cs)
+ds_unsought$iris_r_centered <- center_scale(ds_unsought$iris_r)
+ds_unsought$iris_pp_centered <- center_scale(ds_unsought$iris_pp)
+ds_unsought$iris_h_centered <- center_scale(ds_unsought$iris_h)
+
+summary(split_unsought_strategy_r_model1 <- lm(eff_total ~ iris_r_centered*as_centered, data = ds_unsought))
+
+unsought_ppass_a <- mean(ds_unsought$as_centered, na.rm = T) + sd(ds_unsought$as_centered, na.rm = T)
+unsought_ppass_m <- mean(ds_unsought$as_centered, na.rm = T)
+unsought_ppass_b <- mean(ds_unsought$as_centered, na.rm = T) - sd(ds_unsought$as_centered, na.rm = T)
+
+(unsought_ppass_a_r <- round(unsought_ppass_a,1))
+(unsought_ppass_m_r <- round(unsought_ppass_m,1))
+(unsought_ppass_b_r <- round(unsought_ppass_b,1))
 
 
+(split_unsought_strategy_r_list <- list(as_centered = c(unsought_ppass_a_r, unsought_ppass_b_r),iris_r_centered = 
+                                        seq(-5, 3, by = 1)))
 
+emmip(split_unsought_strategy_r_model1, as_centered ~ iris_r_centered, at = split_unsought_strategy_r_list, CIs = TRUE)
 
+(split_unsought_strategy_r_list_2 <- list(as_centered = c(unsought_ppass_a_r, unsought_ppass_b_r, 'sstest'), iris_r_centered = 
+                                          c(seq(-5, 3, by = 1), 'sstest')))
+simple_slopes(split_unsought_strategy_r_model1, levels = split_unsought_strategy_r_list_2)
 
