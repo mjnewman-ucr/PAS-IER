@@ -93,6 +93,11 @@ ggplot(ds, aes(x = eff_connect)) +
   geom_histogram(bins = 30)
 skewness(ds$eff_connect, na.rm = TRUE)
 
+shapiro.test(ds_pp$iris_pp)
+ggplot(ds_pp, aes(x = iris_pp)) + 
+  geom_histogram(bins = 100)
+skewness(ds_pp$iris_pp, na.rm = TRUE)
+
 #three options
 #> 1. ignore it (and ask: is this good enough for me)
 (model2 <- lm(eff_comp ~ as_centered*iris_cs_centered, data = ds))

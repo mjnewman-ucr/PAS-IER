@@ -80,22 +80,49 @@ rcorr(as.matrix(ds_eff_comp))
 cor_eff <- rcorr(as.matrix(ds_eff_comp))
 flatten_corr_matrix(cor_eff$r, cor_eff$P)
 
+ds_cor2 <-  select (ds, c(eff_total, cerq_reappraisal, age, ders_total, ppass_as, ppass_pc, 
+                          sdt_autonomy_comp, sdt_competence_comp, sdt_relatedness_comp))
+rcorr(as.matrix(ds_cor2))
+cor_2 <- rcorr(as.matrix(ds_cor2))
+flatten_corr_matrix(cor_2$r, cor_2$P)
+
+ds_cor3 <-  select (ds, c(cerq_reappraisal, cerq_selfblame, cerq_acceptance,
+                          cerq_rumination, cerq_refocusing, cerq_planning, 
+                          cerq_perspective, cerq_catastrophizing, cerq_otherblame,
+                          sdt_autonomy_comp, sdt_competence_comp, sdt_relatedness_comp,
+                          eff_total))
+rcorr(as.matrix(ds_cor3))
+cor_3 <- rcorr(as.matrix(ds_cor3))
+flatten_corr_matrix(cor_3$r, cor_3$P)
+
+#apa.cor.table(
+#  ds_cor3,
+#  filename = "sdt_cerq_correlations.doc",
+#  landscape = T)
+
 
 #Scatterplots of IER strategies with IER effectiveness
 plot(ds_cor$eff_total, ds_cor$iris_cs, main="Scatterplot",
      xlab="IER effectiveness", ylab="IER cognitive support", pch=20)
-plot(ds_cor$eff_comp, ds_cor$iris_r, main="Scatterplot",
+plot(ds_cor$eff_total, ds_cor$iris_r, main="Scatterplot",
      xlab="IER effectiveness", ylab="IER responsiveness", pch=20)
-plot(ds_cor$eff_comp, ds_cor$iris_pp, main="Scatterplot",
+plot(ds_cor$eff_total, ds_cor$iris_pp, main="Scatterplot",
      xlab="IER effectiveness", ylab="IER physical presence", pch=20)
-plot(ds_cor$eff_comp, ds_cor$iris_h, main="Scatterplot",
+plot(ds_cor$eff_total, ds_cor$iris_h, main="Scatterplot",
      xlab="IER effectiveness", ylab="IER hostility", pch=20)
+
+ds_pp_cor <- select(ds_pp, c(iris_cs, iris_r, iris_pp, iris_h, ppass_as, eff_comp, eff_total))
+plot(ds_pp_cor$eff_total, ds_pp_cor$iris_pp, main="Scatterplot",
+     xlab="IER effectiveness", ylab="IER physical presence", pch=20)
 
 #-------------------------------------------------------------------------------------------------------------
 
 #t-test for IER effectiveness by IER seeking
+
+(seeking_ftest <- var.test(eff_total ~ seeking, data = ds))
+
 t.test(eff_total ~ seeking, data = ds)
-cohensD(eff_total ~ seeking, data = ds)
+cohens_d(eff_total ~ seeking, data = ds, ci = T, conf.level = 0.95)
 describe(ds$seeking)
 summary(ds$seeking)
 ds %>%
@@ -168,7 +195,12 @@ summary(strategy_r_model7 <- lm(eff_total ~ iris_r_centered*as_centered*seeking,
 apa.reg.table(
   strategy_r_model1,
   strategy_r_model2,
-  filename = "responsivness_as_interaction_comp.doc")
+  filename = NA)
+
+#apa.reg.table(
+#  strategy_r_model1,
+#  strategy_r_model2,
+#  filename = "responsivness_as_interaction_comp.doc")
 
 #didn't need to do this
 #iris_r_a <- mean(ds$iris_r_centered, na.rm = T) + sd(ds$iris_r_centered, na.rm = T)
@@ -183,12 +215,12 @@ apa.reg.table(
 #                           c(iris_r_a_r, iris_r_b_r)))
 
 (strategy_r_list <- list(as_centered = c(ppass_a_r, ppass_b_r),iris_r_centered = 
-                           seq(-4.9044, 2.3683, by = 1)))
+                           seq(-5, 3, by = 1)))
 
 emmip(strategy_r_model2, as_centered ~ iris_r_centered, at = strategy_r_list, CIs = TRUE)
 
 (strategy_r_list_2 <- list(as_centered = c(ppass_a_r, ppass_b_r, 'sstest'), iris_r_centered = 
-                            c(seq(-4.9044, 2.3683, by = 1), 'sstest')))
+                            c(seq(-5, 3, by = 1), 'sstest')))
 simple_slopes(strategy_r_model2, levels = strategy_r_list_2)
 
 #for excel simple slope analyses
@@ -211,6 +243,25 @@ apa.reg.table(
   filename = NA)
 
 #IER: Physical Presence (needs more cleaning to weed out virtual IER)
+
+ds_pp <- ds %>% filter(location=='1')
+summary(strategy_pp_filtered_model1 <- lm(eff_total ~ iris_pp_centered + as_centered, data = ds_pp))
+summary(strategy_pp_filtered_model2 <- lm(eff_total ~ iris_pp_centered*as_centered, data = ds_pp))
+
+apa.reg.table(
+  strategy_pp_filtered_model1,
+  strategy_pp_filtered_model2,
+  filename = NA)
+
+(strategy_pp_list <- list(as_centered = c(ppass_a_r, ppass_b_r),iris_pp_centered = 
+                           seq(-5, 4, by = 1)))
+
+emmip(strategy_pp_filtered_model2, as_centered ~ iris_pp_centered, at = strategy_pp_list, CIs = TRUE)
+
+(strategy_pp_filtered_list_2 <- list(as_centered = c(ppass_a_r, ppass_b_r, 'sstest'), iris_pp_centered = 
+                             c(seq(-5, 4, by = 1), 'sstest')))
+simple_slopes(strategy_pp_filtered_model2, levels = strategy_pp_filtered_list_2)
+
 summary(strategy_pp_model1 <- lm(eff_total ~ iris_pp_centered + as_centered, data = ds))
 summary(strategy_pp_model2 <- lm(eff_total ~ iris_pp_centered*as_centered, data = ds))
 summary(strategy_pp_model3 <- lm(eff_total ~ iris_pp_centered + as_centered + seeking, data = ds))
@@ -236,8 +287,8 @@ summary(strategy_h_model7 <- lm(eff_total ~ iris_h_centered*seeking, data = ds))
 summary(strategy_h_model7 <- lm(eff_total ~ iris_h_centered*seeking + as_centered, data = ds))
 
 apa.reg.table(
-  strategy_h_model3,
-  strategy_h_model6,
+  strategy_h_model1,
+  strategy_h_model2,
   filename = NA)
 
 #-------------------------------------------------------------------------------------------------------------
@@ -254,8 +305,9 @@ summary(lm(eff_total ~ iris_h_centered*as_centered, data = ds_unsought))
 #> and seeking are theoretically moderating hostility, but it's interesting that
 #> the interaction didn't hold when I split the file by seeking
 
-#---------
+#-------------------------------------------------------------------------------------------------------------
 #Messing around with responsiveness*as*seeking
+
 #This was such a clusterfuck. I had to re-center all my variables
 
 #Sought
@@ -317,4 +369,39 @@ emmip(split_unsought_strategy_r_model1, as_centered ~ iris_r_centered, at = spli
 (split_unsought_strategy_r_list_2 <- list(as_centered = c(unsought_ppass_a_r, unsought_ppass_b_r, 'sstest'), iris_r_centered = 
                                           c(seq(-5, 3, by = 1), 'sstest')))
 simple_slopes(split_unsought_strategy_r_model1, levels = split_unsought_strategy_r_list_2)
+
+#----------------------------------------------------------------------------------------------------
+#Exploring possible gender differences
+
+describe(ds$gender)
+
+ds_gender <- ds %>% filter(gender %in% c(1,2))
+describe(ds_gender$gender)
+
+(gender_ftest <- var.test(ders_total ~ gender, data = ds_gender))
+
+t.test(ders_total ~ gender, data = ds_gender)
+t.test(ders_goals ~ gender, data = ds_gender)
+t.test(ders_impulse ~ gender, data = ds_gender)
+t.test(ders_strategies ~ gender, data = ds_gender)
+t.test(ders_clarity ~ gender, data = ds_gender)
+
+t.test(cerq_otherblame ~ gender, data = ds_gender)
+
+#----------------------------------------------------------------------------------------------------
+#
+describe(ds$parent)
+ds_parent <- ds %>% filter(parent %in% c(1,2))
+
+(parent_ftest <- var.test(ders_total ~ parent, data = ds_parent))
+
+t.test(ders_total ~ parent, data = ds_parent)
+
+chisq.test(table(ds_parent$seeking, ds_parent$parent))
+
+ds_home <- ds %>% filter(home %in% c(1,2))
+chisq.test(table(ds_home$seeking, ds_home$home))
+
+describe(ds$age)
+
 
