@@ -51,6 +51,9 @@ summary(ds)
 describe(ds)
 glimpse(ds)
 
+#removing the one participant who has a shit ton of missing data
+ds <- ds[-134,]
+
 #SEEKING
 ds$seeking <- factor(ds$seeking,
                      levels = c(1,2),
@@ -139,7 +142,8 @@ t.test(ppass_as ~ seeking, data = ds)
 
 #Regressions for IER seeking * autonomy support moderation
 
-summary(seeking_model1 <- lm(eff_total ~ seeking + as_centered, data = ds))
+
+summary(seeking_model1 <- sem(eff_total ~ seeking + as_centered, data = ds))
 
 summary(seeking_model2 <- lm(eff_total ~ seeking*as_centered, data = ds))
 
@@ -182,6 +186,12 @@ summary(ds$as_centered)
 #Regressions for IER strategies * autonomy support moderation
 
 #IER: Responsiveness *SIG*
+
+library(lavaan)
+
+summary(strategy_r_model_fiml <- sem('eff_total ~ iris_r_centered*as_centered', data = ds, missing = 'fiml', fixed.x = F))
+
+summary(strategy_r_model <- lm(eff_total ~ 1, data = ds))
 summary(strategy_r_model1 <- lm(eff_total ~ iris_r_centered + as_centered, data = ds))
 summary(strategy_r_model2 <- lm(eff_total ~ iris_r_centered*as_centered, data = ds))
 summary(strategy_r_model3 <- lm(eff_total ~ iris_r_centered + as_centered + seeking, 
@@ -196,6 +206,10 @@ apa.reg.table(
   strategy_r_model1,
   strategy_r_model2,
   filename = NA)
+
+#*this won't work until I deal with my missing data point
+#okay, I removed participant 8134
+anova(strategy_r_model, strategy_r_model1, strategy_r_model2)
 
 #apa.reg.table(
 #  strategy_r_model1,
