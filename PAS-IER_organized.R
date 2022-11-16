@@ -60,6 +60,14 @@ ds$seeking <- factor(ds$seeking,
                      labels = c("Yes", "No"))
 
 #-------------------------------------------------------------------------------------------------------------
+#DESCRIPTIVES
+
+demos <- select(ds, c(ID:seeking))
+describe(demos)
+summary(demos)
+sd(demos$age, na.rm = T)
+
+#-------------------------------------------------------------------------------------------------------------
 
 #Centering variables for interaction terms later
 ds$as_centered <- center_scale(ds$ppass_as)

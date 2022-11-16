@@ -389,7 +389,14 @@ library("vcov")
 library("apaTables")
 library("reghelper")
 
-ds <- read_csv("data/pasier_data_cleaned.csv", col_names = T, na = "NA")
+#ds <- read_csv("data/pasier_data_cleaned.csv", col_names = T, na = "NA")
+
+#Run lines 4 through 224
+
+ds_pp <- ds %>% filter(location=='1')
+
+#removing the one participant who has a shit ton of missing data
+ds <- ds[-134,]
 
 eff_total <- select(ds, c(eff_help:eff_control))
 eff_comp <- select(ds, c(eff_help, eff_coping, eff_control))
@@ -403,6 +410,7 @@ iris_r <- select(ds, c(iris_1, iris_4, iris_6, iris_8, iris_11,
 iris_cs <- select(ds, c(iris_2, iris_5, iris_9, iris_12, 
                         iris_15, iris_19, iris_27))
 iris_pp <- select(ds, c(iris_16, iris_21, iris_24))
+iris_pp_f <- select(ds_pp, c(iris_16, iris_21, iris_24))
 iris_h <- select(ds, c(iris_3, iris_7, iris_10, iris_18, 
                        iris_20, iris_23, iris_26))
 
@@ -420,10 +428,26 @@ cronbach.alpha(eff_comp2)
 cronbach.alpha(eff_comp3)
 cronbach.alpha(eff_comp4)
 
+library("psych")
+alpha(eff_comp)
+alpha(eff_total)
+alpha(eff_comp2)
+alpha(eff_comp3)
+alpha(eff_comp4)
+
 cronbach.alpha(iris_r)
 cronbach.alpha(iris_cs)
 cronbach.alpha(iris_pp)
+cronbach.alpha(iris_pp_f)
 cronbach.alpha(iris_h)
+
+alpha(iris_r)
+alpha(iris_cs)
+alpha(iris_pp_f)
+alpha(iris_h)
 
 cronbach.alpha(ppass_as, na.rm = T)
 cronbach.alpha(ppass_pc, na.rm = T)
+
+alpha(ppass_as)
+alpha(ppass_pc)
