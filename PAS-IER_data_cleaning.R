@@ -93,6 +93,12 @@ ds$race <- factor(ds$race,
 describe(ds$s_orientation_6_text)
 describe(ds$home_3_text)
 describe(ds$home_who_9_text)
+describe(ds$ierc_3_3_text)
+
+
+#Uh-oh... some participants reported about BOTH parents... yikes. 
+#Okay so I'm going to run analyses without those participants, with a different
+#data file, titled "pasier_data_cleaned-updated.csv"
 
 
 #gender_5_text: all NAs
@@ -355,6 +361,32 @@ ds <- ds %>% mutate(ders_total = ders_nonaccept + ders_goals + ders_impulse + de
 ##-----------------------------------------------------------------------------
 ###WRITE A NEW CSV FILE WITH THIS TIDIED DATA ^^^
 
+#new cleaned datafile, removing participants who reported "both" or "neither"
+
+ds_drop<-subset(ds, ierc_3_3_text != "Both" & ierc_3_3_text != "both" 
+                & ierc_3_3_text != "Both my parents" & ierc_3_3_text != "Neither" 
+                & ierc_3_3_text != "My father & My mother" | is.na(ierc_3_3_text))
+
+ds_drop<-subset(ds, ierc_3_3_text != "Both" & ierc_3_3_text != "both" 
+                & ierc_3_3_text != "Both my parents" & ierc_3_3_text != "Neither" 
+                & ierc_3_3_text != "It was initially from my mom, but then my dad joined us later on."
+                & ierc_3_3_text != "My father & My mother" & ierc_3_3_text != "neither really, but more so from my father" 
+                | is.na(ierc_3_3_text))
+
+ds_drop<-subset(ds, ierc_3_3_text != is.na(ierc_3_3_text))
+describe(ds_drop$ierc_2)
+
+clean_ds <- select(ds_drop, c(ID, age, gender, s_orientation, relationship, race, home, dependent:income, 
+                         parent, location, seeking, eff_help:eff_control, eff_comp, eff_total, iris_r:ppass_pc, 
+                         sdt_autonomy_s:sdt_relatedness_comp, bnsr_autonomy:cerq_otherblame, 
+                         ders_nonaccept:ders_total))
+clean_ds <- select(clean_ds, c(sdt_autonomy_fr, sdt_competence_fr, sdt_relatedness_fr, ID:ders_total))
+clean_ds <- select(clean_ds, ID:ders_total)
+
+
+write_csv(clean_ds, "data/pasier_data_cleaned_updated.csv")
+
+#OG CLEAN FILE
 clean_ds <- select(ds, c(ID, age, gender, s_orientation, relationship, race, home, dependent:income, 
                          parent, location, seeking, eff_help:eff_control, eff_comp, eff_total, iris_r:ppass_pc, 
                          sdt_autonomy_s:sdt_relatedness_comp, bnsr_autonomy:cerq_otherblame, 
@@ -363,7 +395,6 @@ clean_ds <- select(clean_ds, c(sdt_autonomy_fr, sdt_competence_fr, sdt_relatedne
 clean_ds <- select(clean_ds, ID:ders_total)
 
 write_csv(clean_ds, "data/pasier_data_cleaned.csv")
-
 
 ##-----------------------------------------------------------------------------
 ## Reliability Stuff

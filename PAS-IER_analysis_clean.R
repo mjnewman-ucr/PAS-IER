@@ -17,9 +17,16 @@ library("emmeans")
 
 
 ds <- read_csv("data/pasier_data_cleaned.csv", col_names = T, na = "NA")
+summary(ds)
+describe(ds)
+glimpse(ds)
 
-ds$eff_total <- rowMeans(subset(ds, select = c(eff_help:eff_control)), na.rm = T)
-ds$eff_comp <- rowMeans(subset(ds, select = c(eff_help, eff_coping, eff_control)), na.rm = T)
+#removing the one participant who has a shit ton of missing data
+ds <- ds[-134,]
+
+ds$seeking <- factor(ds$seeking,
+                     levels = c(1,2),
+                     labels = c("Yes", "No"))
 
 
 ## Survey Descriptives
@@ -56,7 +63,7 @@ df <- select(ds, c(iris_r:ppass_pc, eff_help:eff_control, eff_total, eff_comp,
                    sdt_autonomy_s:sdt_relatedness_comp, bnsr_autonomy:cerq_otherblame,
                    ders_nonaccept:ders_total))
 
-corr <- select(ds, c(iris_cs, iris_r, iris_pp, iris_h, ppass_as, eff_comp))
+corr <- select(ds, c(iris_cs, iris_r, iris_pp, iris_h, seeking, ppass_as, eff_comp))
 rcorr(as.matrix(corr))
 corr_mat <- rcorr(as.matrix(corr))
 flatten_corr_matrix(corr_mat$r, corr_mat$P)

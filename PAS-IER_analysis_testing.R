@@ -781,5 +781,5 @@ md.pairs(ds)
 which(is.na(ds$age))
 which(is.na(ds$ppass_20))
 
-
+t.test(age ~ gender, data = ds_demos)
 
