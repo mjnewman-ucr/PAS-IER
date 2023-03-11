@@ -162,7 +162,7 @@ abline(v=46.6163,col=4,lty=2)
 
 seekingXPAS_ss=ggplot(ds, aes(x = seeking, y = eff_comp)) +
   geom_point(alpha = 0.00) +
-  labs(x = 'Youth-Solicitated IER', y = 'IER Effectiveness') +
+  labs(x = 'Youth-Solicited IER', y = 'IER Effectiveness') +
   scale_size_continuous(guide = "none") +
   geom_abline(aes(intercept=5.9074, slope=0.1507, linetype='+1SD PAS')) +
   geom_abline(aes(intercept=5.0935, slope=0.4105, linetype='Mean PAS')) +

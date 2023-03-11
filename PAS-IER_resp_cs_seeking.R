@@ -91,6 +91,10 @@ ds$iris_r_centered <- center_scale(ds$iris_r)
 #-------------------------------------------------------------------------------------------------------------
 
 #Checking for multicollinearity
+VIFmodel <- lm(eff_comp ~ seeking + ppass_as + iris_r + iris_cs + gender + age, 
+               data = ds)
+vif(VIFmodel)
+
 VIFmodel <- lm(eff_comp ~ seeking + ppass_as + iris_r + iris_cs, 
                data = ds)
 vif(VIFmodel)
@@ -121,17 +125,17 @@ flatten_corr_matrix(cor_mat$r, cor_mat$P)
 describe(ds$gender)
 ds_demos <- ds %>% 
   filter(gender == "1" | gender =="2")
-ds_demos
+describe(ds_demos$gender)
 
 describe(ds$home)
 ds_demos <- ds %>% 
   filter(home == "1" | home =="2")
-ds_demos
+describe(ds_demos$home)
 
 describe(ds$parent)
 ds_demos <- ds %>% 
   filter(parent == "1" | parent =="2")
-ds_demos
+describe(ds_demos$parent)
 
 ds_cor_demo <- select(ds, c(age, gender, income, home, iris_r, iris_cs, seeking_unfactored, ppass_as, eff_comp))
 rcorr(as.matrix(ds_cor_demo))
