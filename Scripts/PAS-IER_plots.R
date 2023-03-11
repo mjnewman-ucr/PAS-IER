@@ -5,6 +5,8 @@
 #Slope info can be found using the this tool: http://www.quantpsy.org/interact/mlr2.htm
     #Make sure to save the output from here in a word doc in case you need it later
 
+#Make sure to run analyses in main script first, since you will need to have
+#the data in your environment
 
 library(psych)
 library(ggplot2)
